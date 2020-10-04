@@ -2,19 +2,28 @@
 {% load static %}
 {% block title %} {{title}} {% endblock%}
 {% block content  %}
-<li>
+
+
+{% if Recipes %}
+<ol>
     {% for recipe in Recipes %}
-        <ul>
+        <li>
             {{ recipe }}:
             <br>
             {{ recipe.description }}    
-        </ul>
+        </li>
+        <br>
     {% endfor %}
-</li>
+</ol>
+{% endif %}
+
 <form action = "/" method="GET">
     {% csrf_token %}
-    {{ form }}
-    <input type = "submit" class="button" value="Search Ingredient" />
+    {{ form}}
+    <input type = "submit" class="button" value="Search" />
 </form>
+
+<br>
+
 
 {% endblock %}

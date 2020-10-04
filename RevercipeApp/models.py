@@ -19,3 +19,10 @@ class IngredientModel(models.Model):
     recipes = models.ManyToManyField(RecipeModel)
     def __str__(self):
         return self.name
+
+
+class CategoryModel(models.Model):
+    name = models.CharField(max_length=100)
+    recipes = models.ManyToManyField(RecipeModel)
+    def __str__(self):
+        return self.name
