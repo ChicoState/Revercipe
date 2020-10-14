@@ -11,7 +11,7 @@ def index(request):
     categoryObjects = []
 
     if request.method == "GET":
-      
+
         form = forms.searchForm(request.GET)
         if form.is_valid():
             ingredient = form.getIngredient()
@@ -22,8 +22,8 @@ def index(request):
 
             if(category != ""):
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=category))
-        
-    else:   
+
+    else:
         form = forms.searchForm()
         ingredient = ""
         category = ""
@@ -44,7 +44,13 @@ def index(request):
     context = {
         "Title": "Recipes",
         "Recipes": recipeList,
-        "form": form
+        "form": form 
     }
 
     return render(request, "index.html", context=context)
+
+def settings(request):
+    return render(request, "settings.html")
+
+def myRecipes(request):
+    return render(request, "myrecipes.html")

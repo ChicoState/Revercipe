@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %} {{title}} {% endblock%}
 {% block content  %}
 
 
@@ -10,7 +9,7 @@
         <li>
             {{ recipe }}:
             <br>
-            {{ recipe.description }}    
+            {{ recipe.description }}
         </li>
         <br>
     {% endfor %}

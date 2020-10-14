@@ -14,5 +14,3 @@ class searchForm(forms.Form):
     def getCategory(self):
         data = self.cleaned_data["category"]
         return data
-        
-
