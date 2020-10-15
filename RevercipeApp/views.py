@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.db.models import Q
 
@@ -54,3 +54,16 @@ def settings(request):
 
 def myRecipes(request):
     return render(request, "myrecipes.html")
+
+def register(request):
+    if request.method == "POST":
+        form_instance = forms.RegistrationForm(request.POST)
+        if form_instance.is_valid():
+            form_instance.save()
+            return redirect("/login/")
+    else:
+        form_instance = forms.RegistrationForm()
+    context = {
+        "form":form_instance,
+    }
+    return render(request, "registration/register.html", context=context)
