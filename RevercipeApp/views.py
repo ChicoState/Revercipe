@@ -11,7 +11,8 @@ def index(request):
     categoryObjects = []
 
     if request.method == "GET":
-
+        navForm = forms.topSearchForm(request.GET)
+        
         form = forms.searchForm(request.GET)
         if form.is_valid():
             ingredient = form.getIngredient()
@@ -44,7 +45,8 @@ def index(request):
     context = {
         "Title": "Recipes",
         "Recipes": recipeList,
-        "form": form 
+        "form": form,
+        "navForm": navForm
     }
 
     return render(request, "index.html", context=context)
