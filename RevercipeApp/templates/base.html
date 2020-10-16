@@ -1,90 +1,63 @@
 {% load static %}
 <!DOCTYPE html>
 <html class="no-js" lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8"/>
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>Revercipe</title>
-        <link rel="stylesheet" href="{% static "css/foundation.css" %}">
-        <link rel="stylesheet" href="{% static "css/app.css" %}">
-    </head>
+    <title>Revercipe</title>
+    <link rel="stylesheet" href="{% static "css/foundation.css" %}">
+    <link rel="stylesheet" href="{% static "css/app.css" %}">
 
-    <nav class="top-bar" data-topbar role="navigation">
-      <ul class="title-area">
-        <li class="name">
-          <h1><a href="/">Revercipe</a></h1>
-        </li> 
-         <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
-        <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
-      </ul> 
+    {% block css %}
+    {% endblock %}
 
-       <section class="top-bar-section">
-        <!-- Right Nav Section -->
-        <ul class="right">
-
-          <!-- <form action = "/" method="GET">
-              {% csrf_token %}
-              {{ form}}
-              <input type = "submit" class="button" value="Search" />
-
-          </form> -->
-
-          {% if request.path != '/login/' and request.path != '/register/' %}
-
-          <li> <input type="search" placeholder="Search Recipes"> </li>
-          <li class="active"><button class="button" type="button"> Search </button></li>
-         
-          {% if user.is_authenticated %}
-            <li class="has-dropdown not-click">
-              <a href="#">Profile</a>
-              <ul class="dropdown">
-                <li><a href="/myrecipes">My Recipes</a></li>
-                <li><a href="/settings">Settings</a></li>
-                <li> <a href='/logout/'>Logout</a></li>
-              </ul>
-            </li>
-          {% endif %}
+  </head>
 
 
-          {% if user.is_anonymous%}
-            <li><a href='/login/' >Login</a></li>
-         {% endif %}
 
-        </ul> 
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <ul class="dropdown menu">
+        <li><a href="/">Revercipe</a></li>
+      </ul>
+    </div>
+    <div class="top-bar-right">
+    {% if request.path != '/login/' and request.path != '/register/' %}
+      <ul class="dropdown menu" data-dropdown-menu>
 
-        <!-- Left Nav Section -->
-        <ul class="left">
-          <li><a href="#">PLACEHOLDER</a></li>
-        </ul>
-      </section>
+        {% if user.is_authenticated %}
+        <li class="has-dropdown not-click">
+          <a href="#">Profile</a>
+          <ul class="dropdown menu" data-dropdown-menu>
+            <li><a href="/myrecipes">My Recipes</a></li>
+            <li><a href="/settings">Settings</a></li>
+            <li> <a href='/logout/'>Logout</a></li>
+          </ul>
+        </li>
+        {% endif %}
 
+        {% if user.is_anonymous%}
+        <li><a class="button" href='/login/' >Login</a></li>
+        {% endif %}
+      </ul>
+    </div>
     {% endif %}
-    </nav>
+  </div>
+
+  <body>
 
 
-    <!-- <div class="top-bar">
-      <div class = "top-bar-left">
-        <ul class="menu">
-          <li><a href="#">ONE</a></li>
-          <li><a href="#">Two</a></li>
-          <li><a href="#">Three</a></li>
-          <li><a href="#">Four</a></li>
-        </ul>
-      </div>
-    </div> -->
+  {% block body %}
+  {% block content %}
+  {% endblock content %}
+  {% endblock body %}
+  </body>
 
-    <body>
-      {% block body %}
-        {% block content %}
-        {% endblock content %}
-      {% endblock body %}
-    </body>
-
-    <script src="{%static "js/vendor/jquery.js" %}"></script>
-    <script src="{%static "js/vendor/what-input.js" %}"></script>
-    <script src="{%static "js/vendor/foundation.js" %}"></script>
-    <script src="{%static "js/app.js" %}"></script>
-    <script src="{%static "js/script.js" %}"></script>
+  <script src="{%static "js/vendor/jquery.js" %}"></script>
+  <script src="{%static "js/vendor/what-input.js" %}"></script>
+  <script src="{%static "js/vendor/foundation.js" %}"></script>
+  <script src="{%static "js/app.js" %}"></script>
+  <script src="{%static "js/script.js" %}"></script>
 </html>
