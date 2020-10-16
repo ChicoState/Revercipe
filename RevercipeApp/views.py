@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.db.models import Q
+from django.contrib.auth import logout
 
 from . import models
 from . import forms
@@ -69,3 +70,7 @@ def register(request):
         "form":form_instance,
     }
     return render(request, "registration/register.html", context=context)
+
+def logout_view(request):
+    logout(request)
+    return redirect("/")
