@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.db.models import Q
+from django.http import JsonResponse
 
 from . import models
 from . import forms
@@ -48,3 +49,22 @@ def index(request):
     }
 
     return render(request, "index.html", context=context)
+
+def Ingredient_auto(request):
+    print("in here")
+    if 'term' in request.GET:
+        qs = models.IngredientModel.objects.filter(name__istartswith=request.GET.get('term'))
+        words = list()
+        for models.IngredientModel in qs:
+            words.append(models.IngredientModel.name)
+        return JsonResponse(words, safe=False)
+    return render(request, 'index.html')
+
+def Category_auto(request):
+    if 'term' in request.GET:
+        qs = models.CategoryModel.objects.filter(name__istartswith=request.GET.get('term'))
+        words = list()
+        for models.CategoryModel in qs:
+            words.append(models.CategoryModel.name)
+        return JsonResponse(words, safe=False)
+    return render(request, 'index.html')
