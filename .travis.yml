@@ -5,10 +5,8 @@ python: # => 2
   - "3.6"
   - "3.7"
 cache: pip
-services: => 3
-  - sqlite3
 env: # => 4
-  - DJANGO=3.1.1 DB=sqlite3
+  - DJANGO=3.1.1 
 install: # => 5
   - pip install -r requirements.txt
 script: # => 7
