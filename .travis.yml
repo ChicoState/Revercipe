@@ -3,7 +3,7 @@ language: python # => 1
 python: # => 2
   - "3.8.5"
 services: => 3
-  - sqlite3
+  - db.sqlite3
 env: # => 4
   - DJANGO=3.1.1 DB=db.sqlite3
 install: # => 5
