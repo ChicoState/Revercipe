@@ -40,3 +40,4 @@ Click for documentation.
 * [Docker](https://docs.docker.com/engine/docker-overview/)
 * [Foundation](https://foundation.zurb.com/sites/docs/)
 
+[![Build Status](https://travis-ci.com/txiong11/Revercipe.svg?branch=master)](https://travis-ci.com/txiong11/Revercipe)
