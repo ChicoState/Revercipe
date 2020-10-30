@@ -20,6 +20,13 @@
       <ul class="dropdown menu">
         <li><a href="/">Revercipe</a></li>
       </ul>
+      <!--STARTING TESTING -->
+      <form class= "form-inline" action = "/" method="GET">
+        {% csrf_token %}
+        {{form}}
+        <input type = "submit" class="button" value="Search" />
+      </form>
+      <!--ENDING TESTING -->
     </div>
     <div class="top-bar-right">
     {% if request.path != '/login/' and request.path != '/register/' %}
