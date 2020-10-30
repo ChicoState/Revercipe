@@ -1,5 +1,5 @@
 from .forms import top_search_form
 
 def top_search_global(request):
-    navSearch = basNav()
+    navSearch = top_search_form()
     return {"navForm":navSearch}
