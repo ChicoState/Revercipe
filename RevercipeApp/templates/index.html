@@ -6,10 +6,14 @@
 {% if Recipes %}
 <ol>
     {% for recipe in Recipes %}
-        <li>
             {{ recipe }}:
             <br>
+            {% load static %}
+            <img src="{{ recipe.image }}">
+            <br>
             {{ recipe.description }}
+            <br>
+            {{ recipe.comments }}
         </li>
         <br>
     {% endfor %}
