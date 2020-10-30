@@ -130,3 +130,30 @@ def register(request):
 def logout_view(request):
     logout(request)
     return redirect("/")
+
+def profile_view(request):
+    return render(request, "profile.html")
+
+def create_recipe(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            form_instance = forms.RecipeForm(request.POST, request.FILES)
+            if form_instance.is_valid():
+                new_recipe = models.RecipeModel(name=form_instance.cleaned_data["name"])
+                new_recipe.name = form_instance.cleaned_data["name"]
+                new_recipe.description = form_instance.cleaned_data["description"]
+                new_recipe.image = form_instance.cleaned_data["image"]
+                new_recipe.save()
+                form_instance = forms.RecipeForm()
+        else:
+            form_instance = forms.RecipeForm()
+    else:
+        form_instance = forms.RecipeForm()
+    
+    context = {
+        "form": form_instance,
+    }
+    
+    
+    return render(request, "create_recipe.html", context=context)
+

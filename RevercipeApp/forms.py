@@ -52,3 +52,19 @@ class top_search_form(forms.Form):
     def getType(self):
         data = self.cleaned_data["search_by"]
         return data
+
+class RecipeForm(forms.Form):
+    name = forms.CharField(label='Name',max_length = 300)
+    description = forms.CharField(label='Description', max_length=500)
+    image = forms.ImageField(label = 'Image', required=False)
+
+    def save(self, request, commit=True):
+        new_recipe = models.RecipeModel(
+            name = self.cleaned_data["name"],
+            description = self.cleaned_data["description"],
+            image = self.cleaned_data["image"]
+        )
+
+        if commit:
+            new_recipe.save()
+        return new_recipe

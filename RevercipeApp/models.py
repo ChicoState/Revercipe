@@ -22,7 +22,7 @@ class Comment(models.Model):
 class RecipeModel(models.Model):
     name = models.CharField(max_length = 300)
     description = models.CharField(max_length=500)
-    image = models.ImageField(null=True)
+    image = models.ImageField(max_length=144, upload_to='uploads/%Y/%m/%d/', blank=True, null=True)
     comments = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True)
     def getname(self):
         return self.name

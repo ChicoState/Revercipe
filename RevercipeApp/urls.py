@@ -10,4 +10,6 @@ urlpatterns = [
     path('logout/', views.logout_view),
     path('settings/', views.settings),
     path('myrecipes/', views.myRecipes),
+    path('profile/', views.profile_view),
+    path('create_recipe/', views.create_recipe)
 ]
