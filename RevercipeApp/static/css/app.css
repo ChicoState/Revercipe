@@ -1,0 +1,15 @@
+.create-recipe-card{
+    width: 45%; 
+    align-content: center; 
+    margin: 0 auto;        
+    margin-top: 20px;    
+    float: none;
+}
+
+.col-primary{
+    background-color: #1779ba;
+}
+
+.col-white{
+    background-color: #1779ba;
+}
