@@ -7,13 +7,65 @@ from . import models
 from . import forms
 # Create your views here.
 
+def basNav(request):
+        ingredientObjects = []
+        categoryObjects = []
+
+        if request.method == "GET":
+            nav_form = forms.top_search_form(request.GET)
+            if nav_form.is_valid():
+                res = nav_form.getResults()
+                type = nav_form.getType()
+
+                if type == "Ingredient":
+                    ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=ingredient))
+
+                if type == "Category":
+                    categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=category))
+
+        else:
+            nav_form = forms.top_search_form()
+            res = ""
+            type = ""
+
+        recipes = []
+
+        if ingredientObjects:
+            for ing in ingredientObjects:
+                recipes.append(ing.recipes.all())
+
+        if categoryObjects:
+            for cat in categoryObjects:
+                recipes.append(cat.recipes.all())
+
+        recipeList = []
+        for reciper in recipes:
+            for recipe in reciper:
+                recipeList.append(recipe)
+        context = {
+            "Title": "Recipes",
+            "Recipes": recipeList,
+            "navForm": nav_form
+        }
+        return render(request, context=context)
+
 def index(request):
     ingredientObjects = []
     categoryObjects = []
 
     if request.method == "GET":
-        navForm = forms.topSearchForm(request.GET)
-        
+        nav_form = forms.top_search_form(request.GET)
+        if nav_form.is_valid():
+            res = nav_form.getResults()
+            type = nav_form.getType()
+
+            if type == "Ingredient":
+                ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=ingredient))
+
+            if type == "Category":
+                categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=category))
+
+
         form = forms.searchForm(request.GET)
         if form.is_valid():
             ingredient = form.getIngredient()
@@ -26,6 +78,10 @@ def index(request):
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=category))
 
     else:
+        nav_form = forms.top_search_form()
+        res = ""
+        type = ""
+
         form = forms.searchForm()
         ingredient = ""
         category = ""
@@ -47,7 +103,7 @@ def index(request):
         "Title": "Recipes",
         "Recipes": recipeList,
         "form": form,
-        "navForm": navForm
+        "navForm": nav_form
     }
 
     return render(request, "index.html", context=context)

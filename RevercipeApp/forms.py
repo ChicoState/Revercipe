@@ -34,13 +34,21 @@ class RegistrationForm(UserCreationForm):
         if commit:
             user.save()
         return user
-        
-class topSearchForm(forms.Form):
+
+class top_search_form(forms.Form):
     choice = (
     ("1", "Recipe"),
     ("2", "Category"),
-    ("3", "Ingredients")
+    ("3", "Ingredient")
     )
 
-    search_by = forms.ChoiceField(label='Pick Search', choices = choice)
-    search_value = forms.CharField(label='Search Value', required=True, max_length=100)
+    search_by = forms.ChoiceField(label='', required=False, choices = choice)
+    search_value = forms.CharField(label='', required=False, max_length=100)
+
+    def getResults(self):
+        data = self.cleaned_data["search_value"]
+        return data
+
+    def getType(self):
+        data = self.cleaned_data["search_by"]
+        return data

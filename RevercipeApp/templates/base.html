@@ -19,15 +19,22 @@
     <div class="top-bar-left">
       <ul class="dropdown menu">
         <li><a href="/">Revercipe</a></li>
-      </ul>
-      <!--STARTING TESTING -->
-      <form class= "form-inline" action = "/" method="GET">
-        {% csrf_token %}
-        {{form}}
-        <input type = "submit" class="button" value="Search" />
-      </form>
-      <!--ENDING TESTING -->
+
+        </ul>
     </div>
+
+    <!--STARTING TESTING -->
+    <div class"top-bar">
+    <form action = "/" method="GET">
+      <ul class="dropdown menu">
+      {{navForm.as_ul}}
+      <li><input type = "submit" class="button" value="Search" /></li>
+    </ul>
+    </form>
+  </div>
+    {% csrf_token %}
+    <!--ENDING TESTING -->
+
     <div class="top-bar-right">
     {% if request.path != '/login/' and request.path != '/register/' %}
       <ul class="dropdown menu" data-dropdown-menu>
