@@ -11,5 +11,6 @@ urlpatterns = [
     path('settings/', views.settings),
     path('myrecipes/', views.myRecipes),
     path('profile/', views.profile_view),
-    path('create_recipe/', views.create_recipe)
+    path('create_recipe/', views.create_recipe),
+    path('recipe/<int:instance_id>/', views.get_recipe)
 ]
