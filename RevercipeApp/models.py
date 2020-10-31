@@ -31,7 +31,6 @@ class RecipeModel(models.Model):
     def __str__(self):
         return self.name
 
-
 class Nutrients(models.Model):
     name = models.CharField(max_length=30)
     amount = models.IntegerField()

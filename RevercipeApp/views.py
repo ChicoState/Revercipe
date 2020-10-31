@@ -29,23 +29,24 @@ def index(request):
         form = forms.searchForm()
         ingredient = ""
         category = ""
-    recipes = []
+    recipes = models.RecipeModel.objects.all()
 
-    if ingredientObjects:
-        for ing in ingredientObjects:
-            recipes.append(ing.recipes.all())
+    # if ingredientObjects:
+    #     for ing in ingredientObjects:
+    #         recipes.append(ing.recipes.all())
 
-    if categoryObjects:
-        for cat in categoryObjects:
-            recipes.append(cat.recipes.all())
+    # if categoryObjects:
+    #     for cat in categoryObjects:
+    #         recipes.append(cat.recipes.all())
 
-    recipeList = []
-    for reciper in recipes:
-        for recipe in reciper:
-            recipeList.append(recipe)
+    # recipeList = []
+    # for reciper in recipes:
+    #     for recipe in reciper:
+    #         recipeList.append(recipe)
+
     context = {
         "Title": "Recipes",
-        "Recipes": recipeList,
+        "Recipes": recipes,
         "form": form,
         "navForm": navForm
     }
@@ -100,4 +101,29 @@ def create_recipe(request):
     
     
     return render(request, "create_recipe.html", context=context)
+
+def get_recipe(request, instance_id):
+    recipe_name = ""
+    recipe_description = ""
+    recipe_image = ""
+
+    if request.method == "GET":
+        if request.user.is_authenticated:
+            recipes = models.RecipeModel.objects.all()
+            for recipe in recipes:
+                if(recipe.id == instance_id):
+                    recipe_name = recipe.name
+                    recipe_description = recipe.description
+                    recipe_image = recipe.image
+
+    context = {
+        "id" : recipe.id,
+        "name": recipe_name,
+        "description": recipe_description,
+        "image": recipe_image
+    }
+
+    return render(request, "recipe_card.html", context=context)
+
+
 
