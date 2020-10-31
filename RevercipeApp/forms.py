@@ -37,11 +37,10 @@ class RegistrationForm(UserCreationForm):
 
 class top_search_form(forms.Form):
     choice = (
-    ("1", "Recipe"),
-    ("2", "Category"),
-    ("3", "Ingredient")
+    ("1", "Ingredient"),
+    ("2", "Category")
     )
-
+    #widget=forms.Textarea(attrs={'class':'special', 'size': '40'})
     search_by = forms.ChoiceField(label='', required=False, choices = choice)
     search_value = forms.CharField(label='', required=False, max_length=100)
 

@@ -19,11 +19,11 @@ def index(request):
             type = nav_form.getType()
             print(type)
             #INGREDIENT
-            if type == "3":
+            if type == "1":
                 ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=res))
                 print("TESTING")
             #CATEGORY
-            if type == 2:
+            if type == "2":
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
 
 
