@@ -46,9 +46,9 @@ class topSearchForm(forms.Form):
     search_value = forms.CharField(label='Search Value', required=True, max_length=100)
 
 class RecipeForm(forms.Form):
-    name = forms.CharField(label='Name',max_length = 300)
-    description = forms.CharField(label='Description', max_length=500)
-    image = forms.ImageField(label = 'Image', required=False)
+    name = forms.CharField(label='Recipe Name',max_length = 100)
+    description = forms.CharField(label='Recipe Description', max_length=500, widget=forms.Textarea(attrs={'rows':4, 'cols':5}))
+    image = forms.ImageField(label = 'Recipe Photo', required=False)
     
     def save(self, request, commit=True):
         new_recipe = models.RecipeModel(
@@ -60,4 +60,19 @@ class RecipeForm(forms.Form):
         if commit:
             new_recipe.save()
         return new_recipe
+
+class IngredientForm(forms.Form):
+    name = forms.CharField(label='Ingredient Name',max_length = 100)
+    calories = forms.IntegerField(label='Calorie Amount')
+  
+    def save(self, request, commit=True):
+        new_ingredient = models.RecipeModel(
+            name = self.cleaned_data["name"],
+            calories = self.cleaned_data["calories"]
+        )
+
+        if commit:
+            new_ingredient.save()
+        return new_ingredient
+
 

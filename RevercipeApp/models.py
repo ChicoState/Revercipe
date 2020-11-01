@@ -20,6 +20,7 @@ class Comment(models.Model):
         return self.comment_text
 
 class RecipeModel(models.Model):
+    author = models.ForeignKey(User, default="", on_delete=models.CASCADE)    
     name = models.CharField(max_length = 300)
     description = models.CharField(max_length=500)
     image = models.ImageField(max_length=144, upload_to='uploads/%Y/%m/%d/', blank=True, null=True)

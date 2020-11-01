@@ -17,12 +17,32 @@
             {{form.description.label}}
             {{form.description}}
 
+            {{form.image.label}}
             {{form.image}}
+
+            <!-- <table class="hover">
+              <thead>
+                <tr>
+                  <th width="200">Ingredient Name</th>
+                  <th width="150">Calories</th>
+                </tr>
+              </thead>
+            {% for ing_form in ingredient_forms %}
+              <tbody>
+                <tr>
+                  <td>{{ing_form.name}}</td>
+                  <td>{{ing_form.calories}}</td>
+                </tr>
+            {% endfor %}
+          </table> -->
+
             <input type = "submit" class="button expanded" value="Create" />
         </form>
         
     </div>
   </div>
+
+
 
 {% endblock %}
 {% block scripts %}
