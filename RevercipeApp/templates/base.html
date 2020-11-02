@@ -41,7 +41,7 @@
 
         {% if user.is_authenticated %}
         <li class="has-dropdown not-click">
-          <a href="/profile/">Profile</a>
+          <a href="/profile/">{{user.username}}</a>
           <ul class="dropdown menu" data-dropdown-menu>
             <li><a href="/myrecipes">My Recipes</a></li>
             <li><a href="/settings">Settings</a></li>
@@ -51,7 +51,7 @@
         {% endif %}
 
         {% if user.is_anonymous%}
-        <li><a class="button" href='/login/' >Login</a></li>
+          <li><a class="button" href='/login/' >Login</a></li>
         {% endif %}
       </ul>
 
