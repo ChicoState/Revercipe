@@ -77,7 +77,7 @@ def index(request):
     #     for recipe in reciper:
     #         recipeList.append(recipe)
 
-    recipes = models.RecipeModel.objects.all()
+    #recipes = models.RecipeModel.objects.all()
 
     context = {
         "Title": "Recipes",
@@ -112,8 +112,8 @@ def register(request):
     context = {
         "form":form_instance,
     }
-    top_search_global.update({navForm})
-    return render(request, "registration/register.html", context=top_search_global)
+
+    return render(request, "registration/register.html", context=context)
 
 def logout_view(request):
     logout(request)
@@ -143,7 +143,7 @@ def create_recipe(request):
         "form": form_instance
     }
 
-     return render(request, "create_recipe.html", context=context)
+    return render(request, "create_recipe.html", context=context)
 
 
 def get_recipe(request, instance_id):
