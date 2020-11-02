@@ -10,6 +10,7 @@ from . import forms
 def index(request):
     ingredientObjects = []
     categoryObjects = []
+    recipes = []
 
     if request.method == "GET":
         nav_form = forms.top_search_form(request.GET)
@@ -20,11 +21,18 @@ def index(request):
             print(type)
             #INGREDIENT
             if type == "1":
-                ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=res))
+                recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
+                # ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=res))
                 print("TESTING")
             #CATEGORY
             if type == "2":
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
+
+        else:
+            nav_form = forms.top_search_form()
+            res = ""
+            type = ""
+            recipes = models.RecipeModel.objects.all()
 
 
         # form = forms.searchForm(request.GET)
@@ -42,11 +50,13 @@ def index(request):
         nav_form = forms.top_search_form()
         res = ""
         type = ""
+        recipes = models.RecipeModel.objects.all()
 
         # form = forms.searchForm()
         # ingredient = ""
         # category = ""
-    recipes = models.RecipeModel.objects.all()
+
+    #recipes = []
 
     # if ingredientObjects:
     #     for ing in ingredientObjects:
@@ -63,7 +73,7 @@ def index(request):
 
     context = {
         "Title": "Recipes",
-        "Recipes": recipeList,
+        "Recipes": recipes,
         #"form": form,
         "navForm": nav_form
     }
