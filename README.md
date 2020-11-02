@@ -1,4 +1,5 @@
 # Revercipe
+[![Build Status](https://travis-ci.org/ChicoState/Revercipe.svg?branch=master)](https://travis-ci.org/ChicoState/Revercipe)
 
 ## Begin
 * Clone repo
@@ -39,5 +40,3 @@ Click for documentation.
 * [Django](https://docs.djangoproject.com/en/2.2/)
 * [Docker](https://docs.docker.com/engine/docker-overview/)
 * [Foundation](https://foundation.zurb.com/sites/docs/)
-
-[![Build Status](https://travis-ci.org/ChicoState/Revercipe.svg?branch=master)](https://travis-ci.org/ChicoState/Revercipe)
