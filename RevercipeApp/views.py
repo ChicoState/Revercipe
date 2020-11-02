@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.db.models import Q
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt,csrf_protect 
-
+from django.contrib.auth.models import User
 
 from . import models
 from . import forms
@@ -46,10 +46,17 @@ def index(request):
 def settings(request):
     return render(request, "settings.html")
 
-def myRecipes(request):
-    return render(request, "myrecipes.html")
+def my_recipes(request):
+    if request.method == "GET":
+        recipe_array = models.RecipeModel.objects.filter(author=request.user)
 
-def register(request):
+    context = {
+        "recipes": recipe_array
+    }
+
+    return render(request, "myrecipes.html", context=context)
+
+def register(request):    
     if request.method == "POST":
         form_instance = forms.RegistrationForm(request.POST)
         if form_instance.is_valid():
@@ -70,11 +77,9 @@ def profile_view(request):
     return render(request, "profile.html")
 
 def create_recipe(request):
-
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.RecipeForm(request.POST, request.FILES)
-
             if form_instance.is_valid():
                 new_recipe = models.RecipeModel(name=form_instance.cleaned_data["name"])
                 new_recipe.name = form_instance.cleaned_data["name"]
@@ -82,7 +87,6 @@ def create_recipe(request):
                 new_recipe.image = form_instance.cleaned_data["image"]
                 new_recipe.author = request.user
                 new_recipe.save()
-
                 return redirect("/add_ingredient/" + str(new_recipe.id) + "/")
         else:
             form_instance = forms.RecipeForm()
@@ -101,7 +105,6 @@ def get_recipe(request, instance_id):
     recipe_name = ""
     recipe_description = ""
     recipe_image = ""
-    recipe_author = ""
     request_user = request.user
 
     if request.method == "GET":
@@ -112,14 +115,12 @@ def get_recipe(request, instance_id):
                     recipe_name = recipe.name
                     recipe_description = recipe.description
                     recipe_image = recipe.image
-                    recipe_author = recipe.author
 
     context = {
         "id" : recipe.id,
         "name": recipe_name,
         "description": recipe_description,
         "image": recipe_image,
-        "author": recipe_author,
         "request_user": request_user
     }
 
@@ -128,16 +129,8 @@ def get_recipe(request, instance_id):
 @csrf_exempt
 def add_ingredients(request, instance_id):
     cur_recipe = ""
-    recipes = models.RecipeModel.objects.all()
-    for recipe in recipes:
-        if(recipe.id == instance_id):
-            cur_recipe = recipe
-            recipe_name = recipe.name
-            recipe_description = recipe.description
-            recipe_image = recipe.image
-            recipe_author = recipe.author
-
-    recipe_ingredients = models.IngredientModel.objects.filter(recipes = cur_recipe)
+    recipe = models.RecipeModel.objects.get(id=instance_id)
+    recipe_ingredients = models.IngredientModel.objects.filter(recipes = recipe)
 
     if request.method == "POST":
         if request.user.is_authenticated:
@@ -148,7 +141,7 @@ def add_ingredients(request, instance_id):
                 new_ingredient.name = form_instance.cleaned_data["name"]
                 new_ingredient.calories = form_instance.cleaned_data["calories"]
                 new_ingredient.save()
-                new_ingredient.recipes.add(cur_recipe)
+                new_ingredient.recipes.add(recipe)
                 new_ingredient.save()
                 return redirect("/add_ingredient/" + str(instance_id) + "/")
         else:
@@ -158,9 +151,9 @@ def add_ingredients(request, instance_id):
     
     context = {
         "id": instance_id,
-        "name": recipe_name,
-        "description": recipe_description,
-        "image": recipe_image,
+        "name": recipe.name,
+        "description": recipe.description,
+        "image": recipe.image,
         "form": form_instance,
         "ingredients": recipe_ingredients
     }
