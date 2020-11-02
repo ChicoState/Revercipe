@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-# Create your models here.
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class IntegerRangeField(models.IntegerField):
@@ -20,7 +21,7 @@ class Comment(models.Model):
         return self.comment_text
 
 class RecipeModel(models.Model):
-    author = models.ForeignKey(User, default="", on_delete=models.CASCADE)    
+    author = models.ForeignKey(User, default = "", on_delete=models.CASCADE)
     name = models.CharField(max_length = 300)
     description = models.CharField(max_length=500)
     image = models.ImageField(max_length=144, upload_to='uploads/%Y/%m/%d/', blank=True, null=True)
@@ -53,10 +54,19 @@ class CategoryModel(models.Model):
         return self.name
 
 class UserProfileModel(models.Model):
-    django_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipes = models.ForeignKey(RecipeModel, on_delete=models.CASCADE)
-    pantry_ingredients = models.ForeignKey(IngredientModel, on_delete=models.CASCADE)
-    comments = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    django_user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
+    pantry_ingredients = models.ForeignKey(IngredientModel, null=True, on_delete=models.CASCADE)
+    comments = models.ForeignKey(Comment, null=True, on_delete=models.CASCADE)
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfileModel.objects.create(django_user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
 
 class Follower(models.Model):
     follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)

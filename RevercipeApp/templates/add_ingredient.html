@@ -22,14 +22,8 @@
                     <th width="100"></th>
                 </tr>
             </thead>
-            {% for ingredient in ingredients%}        
+                
                 <tbody>
-                <tr>
-                    <td>{{ingredient.name}}</td>
-                    <td>{{ingredient.calories}}</td>
-                    <td></td>
-                </tr>
-            {% endfor %}
                 <form action="/add_ingredient/{{id}}/" enctype="multipart/form-data" method="POST">
                     {% csrf_token %}                    
                     <tr>
@@ -38,6 +32,14 @@
                         <td><input type = "submit" class="button expanded" value="Add Ingredient"/></td>
                     </tr>
                 </form>
+                {% for ingredient in ingredients%} 
+                <tr>
+                    <td>{{ingredient.name}}</td>
+                    <td>{{ingredient.calories}}</td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+             
         </table>
     
   </div>
