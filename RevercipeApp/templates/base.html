@@ -22,6 +22,19 @@
         <li><a href="/create_recipe/">Create Recipe</a></li>
       </ul>
     </div>
+
+    <!--STARTING TESTING -->
+    <div class="top-bar-left">
+    <form action = "/" method="GET">
+      <ul class="dropdown menu">
+      {{navForm.as_ul}}
+      <li><input type = "submit" class="button" value="Search" /></li>
+    </ul>
+    </form>
+  </div>
+    {% csrf_token %}
+    <!--ENDING TESTING -->
+
     <div class="top-bar-right">
     {% if request.path != '/login/' and request.path != '/register/' %}
       <ul class="dropdown menu" data-dropdown-menu>
