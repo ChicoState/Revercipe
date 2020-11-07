@@ -126,6 +126,7 @@ MEDIA_URL = '/media/'
 
 
 STATICFILES_DIRS = (
-    # ...
+    os.path.join(BASE_DIR, "static"),
+    '/var/www/static/',
     ("/static/Images"),
 )

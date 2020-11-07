@@ -10,35 +10,35 @@ from . import forms
 # Create your views here.
 
 def index(request):
-    ingredientObjects = []
-    categoryObjects = []
+    # ingredientObjects = []
+    # categoryObjects = []
 
-    if request.method == "GET":
-        navForm = forms.topSearchForm(request.GET)
-        form = forms.searchForm(request.GET)
+    # if request.method == "GET":
+    #     navForm = forms.topSearchForm(request.GET)
+    #     form = forms.searchForm(request.GET)
 
-        if form.is_valid():
-            ingredient = form.getIngredient()
-            category = form.getCategory()
+    #     if form.is_valid():
+    #         ingredient = form.getIngredient()
+    #         category = form.getCategory()
 
-            if(ingredient != ""):
-                ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=ingredient))
+    #         if(ingredient != ""):
+    #             ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=ingredient))
 
-            if(category != ""):
-                categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=category))
+    #         if(category != ""):
+    #             categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=category))
 
-    else:
-        form = forms.searchForm()
-        ingredient = ""
-        category = ""
+    # else:
+    #     form = forms.searchForm()
+    #     ingredient = ""
+    #     category = ""
 
     recipes = models.RecipeModel.objects.all()
     
     context = {
         "Title": "Recipes",
         "Recipes": recipes,
-        "form": form,
-        "navForm": navForm
+        # "form": form,
+        # "navForm": navForm
     }
 
     return render(request, "index.html", context=context)
@@ -102,9 +102,6 @@ def create_recipe(request):
 
 
 def get_recipe(request, instance_id):
-    recipe_name = ""
-    recipe_description = ""
-    recipe_image = ""
     request_user = request.user
 
     if request.method == "GET":
@@ -117,18 +114,14 @@ def get_recipe(request, instance_id):
                     recipe_image = recipe.image
 
     context = {
-        "id" : recipe.id,
-        "name": recipe_name,
-        "description": recipe_description,
-        "image": recipe_image,
+        "recipe" : recipe,
         "request_user": request_user
     }
 
-    return render(request, "recipe_card.html", context=context)
+    return render(request, "recipe.html", context=context)
 
 @csrf_exempt
 def add_ingredients(request, instance_id):
-    cur_recipe = ""
     recipe = models.RecipeModel.objects.get(id=instance_id)
     recipe_ingredients = models.IngredientModel.objects.filter(recipes = recipe)
 
@@ -151,9 +144,7 @@ def add_ingredients(request, instance_id):
     
     context = {
         "id": instance_id,
-        "name": recipe.name,
-        "description": recipe.description,
-        "image": recipe.image,
+        "recipe": recipe,
         "form": form_instance,
         "ingredients": recipe_ingredients
     }

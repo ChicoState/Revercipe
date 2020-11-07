@@ -57,6 +57,7 @@ class UserProfileModel(models.Model):
     django_user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     pantry_ingredients = models.ForeignKey(IngredientModel, null=True, on_delete=models.CASCADE)
     comments = models.ForeignKey(Comment, null=True, on_delete=models.CASCADE)
+    recipes = models.ForeignKey(RecipeModel, null=True, on_delete=models.CASCADE)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
