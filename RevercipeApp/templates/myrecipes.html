@@ -5,9 +5,21 @@
 {% if recipes %}
     {% for recipe in recipes %}
         <a href="/recipe/{{recipe.id}}/">
-            <div class="card" style="width: 45%; height: 50%; align-content: center;  margin: 0 auto;        
-                                                margin-top: 2%; margin-left:3%; float: left;">
-            {% include "recipe_card.html" %}
+            <div class="card" style="width: 45%; height: 50%; align-content: center;  margin: 0 auto;
+            margin-top: 2%; margin-left:3%; float: left;">
+
+                <div class="card-divider" style="background-color: #1779ba;">
+                <h4 style="color: white;">{{recipe.name}}</h4>
+                </div>
+
+                <div class="card-section" style="align-content: center; ">
+                    {% if recipe.image %}
+                    <img src="{{recipe.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left;"/>
+                    {% endif %}
+                    <div class="card-divider">
+                        <p>{{recipe.description}}</p>
+                    </div>
+                </div>
             </div>
         </a>
     {% endfor %}

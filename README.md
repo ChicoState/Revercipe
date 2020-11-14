@@ -1,7 +1,8 @@
-# Revercipe 
+# Revercipe
+[![Build Status](https://travis-ci.org/ChicoState/Revercipe.svg?branch=master)](https://travis-ci.org/ChicoState/Revercipe)
 
 ## Begin
-* Clone repo 
+* Clone repo
 ```
 git clone https://github.com/ChicoState/Revercipe.git
 ```
@@ -34,10 +35,8 @@ python manage.py migrate
 ## Hidden files
 * **.gitignore** - ignores python code & macOS generated files that don't need to be in the repo
 
-## Techs used 
+## Techs used
 Click for documentation.
 * [Django](https://docs.djangoproject.com/en/2.2/)
 * [Docker](https://docs.docker.com/engine/docker-overview/)
 * [Foundation](https://foundation.zurb.com/sites/docs/)
-
-[![Build Status](https://travis-ci.com/txiong11/Revercipe.svg?branch=master)](https://travis-ci.org/github/ChicoState/Revercipe/builds/739794117)

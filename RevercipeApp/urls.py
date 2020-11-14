@@ -14,4 +14,5 @@ urlpatterns = [
     path('create_recipe/', views.create_recipe),
     path('recipe/<int:instance_id>/', views.get_recipe),
     path('add_ingredient/<int:instance_id>/', views.add_ingredients)
+    # path('add_ingredient/<int:instance_id>/', views.add_ingredients, name='autocomplete')
 ]
