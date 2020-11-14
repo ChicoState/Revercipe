@@ -31,7 +31,7 @@ def index(request):
 
             res = nav_form.getResults()
             type = nav_form.getType()
-            print(type)
+            
             #RECIPE
             if type == "1":
                 recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
@@ -42,7 +42,6 @@ def index(request):
             #Ingredient
             if type == "3":
                 ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=res))
-                print(ingredientObjects)
 
 
 
@@ -192,18 +191,40 @@ def add_ingredients(request, instance_id):
                 new_ingredient.save()
                 new_ingredient.recipes.add(recipe)
                 new_ingredient.save()
-                return redirect("/add_ingredient/" + str(instance_id) + "/")
+
+                context = {
+                    "id": instance_id,
+                    "recipe": recipe,
+                    "form": form_instance,
+                    "ingredients": recipe_ingredients,
+                    "success": True
+                }
+
+                return render(request, "add_ingredient.html", context=context)
+
+            if not form_instance.is_valid():
+
+                context = {
+                    "id": instance_id,
+                    "recipe": recipe,
+                    "form": form_instance,
+                    "ingredients": recipe_ingredients,
+                    "fail": True
+                }
+
+                return render(request, "add_ingredient.html", context=context)
+             
         else:
             form_instance = forms.IngredientForm()
     else:
         form_instance = forms.IngredientForm()
     
-    if 'term' in request.GET:
-        qs = models.IngredientModel.objects.filter(name__istartswith=request.GET.get('term'))
-        Ingredient_list = list()
-        for ingredient in qs:
-            Ingredient_list.append(ingredient.name)
-        return JsonResponse(Ingredient_list, safe=False)
+    # if 'term' in request.GET:
+    #     qs = models.IngredientModel.objects.filter(name__istartswith=request.GET.get('term'))
+    #     Ingredient_list = list()
+    #     for ingredient in qs:
+    #         Ingredient_list.append(ingredient.name)
+    #     return JsonResponse(Ingredient_list, safe=False)
 
     context = {
         "id": instance_id,
@@ -213,3 +234,7 @@ def add_ingredients(request, instance_id):
     }
 
     return render(request, "add_ingredient.html", context=context)
+
+def add_nutrition(request, instance_id):
+    context = {}
+    return render(request, "add_nutrition.html", context=context)
