@@ -71,6 +71,7 @@ class RecipeForm(forms.Form):
 
 class IngredientForm(forms.Form):
     name = forms.CharField(label='Ingredient Name',max_length = 100)
+    # name = forms.CharField(label='Ingredient Name',max_length = 100, widget=forms.TextInput(attrs={'id':'name'}))
     calories = forms.IntegerField(label='Calorie Amount')
 
     def save(self, request, commit=True):
