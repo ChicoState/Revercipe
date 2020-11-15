@@ -1,14 +1,35 @@
 
-<div class="card-divider" style="background-color: #1779ba;">
+<div class="card-divider" style="background-color: #1779ba;margin-bottom:0;padding-bottom:0;">
     <h4 style="color: white;">{{recipe.name}}</h4>
 </div>
 
-<div class="card-section" style="align-content: center; ">
-    <img src="{{recipe.image.url}}" style="width:100%; height:400px; object-fit: cover; float: left;"/>
-    <div class="card-divider">
+<div class="card-divider" style="background-color: #1779ba;margin-top:0;padding-top:0;">
+      <h6 style="color: white; ">Author: {{recipe.author}}</h6>
+</div>
+
+<div class="card-section" style="align-content: center ">
+    <img src="{{recipe.image.url}}" style="width:30%; height:232px; object-fit: cover; float: left;"/>
+    <div class="card-divider" style="width:69%;">
+      <table class="hover" style="height:200px; display:block;">
+          <thead>
+              <tr>
+                  <th width="100%">Ingredient Name</th>
+                  <th width="45%">Calories</th>
+              </tr>
+          </thead>
+
+          <tbody style=" overflow-y:scroll; height:150px; display:block;">
+              {% for ingredient in ingredients%}
+                  <tr>
+                      <td width="100%">{{ingredient.name}}</td>
+                      <td width="45%">{{ingredient.calories}}</td>
+                  </tr>
+              {% endfor %}
+           </tbody>
+      </table>
+    </div>
+
+  <div class="card-section" style="height:200px;">
         <p>{{recipe.description}}</p>
-</div> 
-
-
-
-
+    </div>
+  </div>

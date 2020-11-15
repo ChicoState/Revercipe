@@ -12,6 +12,7 @@ urlpatterns = [
     path('profile/<int:user_id>/', views.profile_view),
     path('create_recipe/', views.create_recipe),
     path('recipe/<int:instance_id>/', views.get_recipe),
+#   path('add_ingredient/<int:instance_id>/', views.add_ingredients)
     path('add_ingredient/<int:instance_id>/', views.add_ingredients),
     path('nutrition/<int:instance_id>/', views.add_nutrition),
     path('update_profile/', views.update_profile)

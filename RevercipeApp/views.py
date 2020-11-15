@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
+
 from django.db.models import Q
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
@@ -9,6 +10,19 @@ from django.contrib.auth.decorators import login_required
 from . import models
 from . import forms
 # Create your views here.
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+
+from django.db.models import Q
+from django.contrib.auth import logout
+from django.views.decorators.csrf import csrf_exempt,csrf_protect
+from django.contrib.auth.models import User
+
+from . import models
+from . import forms
+# Create your views here.
+
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -32,7 +46,6 @@ def index(request):
 
             res = nav_form.getResults()
             type = nav_form.getType()
-            
             #RECIPE
             if type == "1":
                 recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
@@ -40,57 +53,24 @@ def index(request):
             #CATEGORY
             if type == "2":
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
+                recipes=[]
+                for cat in categoryObjects:
+                    for recipe in cat.recipes.all():
+                        recipes.append(recipe)
 
             #Ingredient
             if type == "3":
                 ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=res))
-
-
-
-        # form = forms.searchForm(request.GET)
-        # if form.is_valid():
-        #     ingredient = form.getIngredient()
-        #     category = form.getCategory()
-        #
-        #     if(ingredient != ""):
-        #         ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=ingredient))
-        #
-        #     if(category != ""):
-        #         categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=category))
-
-        #MERGED CODE
-        # navForm = forms.topSearchForm(request.GET)
-        # form = forms.searchForm(request.GET)
-        #
-        # if form.is_valid():
-        #     ingredient = form.getIngredient()
-        #     category = form.getCategory()
+                recipes=[]
+                for ing in ingredientObjects:
+                    for recipe in ing.recipes.all():
+                        recipes.append(recipe)
 
     else:
         nav_form = forms.top_search_form()
         res = ""
         type = ""
 
-        # form = forms.searchForm()
-        # ingredient = ""
-        # category = ""
-
-    #recipes = []
-
-    # if ingredientObjects:
-    #     for ing in ingredientObjects:
-    #         recipes.append(ing.recipes.all())
-
-    # if categoryObjects:
-    #     for cat in categoryObjects:
-    #         recipes.append(cat.recipes.all())
-
-    # recipeList = []
-    # for reciper in recipes:
-    #     for recipe in reciper:
-    #         recipeList.append(recipe)
-
-    #recipes = models.RecipeModel.objects.all()
 
     context = {
         "Title": "Recipes",
@@ -184,7 +164,6 @@ def create_recipe(request):
                 new_recipe.image = form_instance.cleaned_data["image"]
                 new_recipe.author = request.user
                 new_recipe.save()
-               
                 return redirect("/add_ingredient/" + str(new_recipe.id) + "/")
         else:
             form_instance = forms.RecipeForm()
@@ -201,16 +180,19 @@ def create_recipe(request):
 def get_recipe(request, instance_id):
     request_user = request.user
     current_recipe = ""
+    recipe_ingredients = []
     if request.method == "GET":
         if request.user.is_authenticated:
             recipes = models.RecipeModel.objects.all()
             for recipe in recipes:
                 if(recipe.id == instance_id):
                     current_recipe = recipe
-    
+    recipe_ingredients = models.IngredientModel.objects.filter(recipes__name=current_recipe)
+
     context = {
         "recipe" : current_recipe,
-        "request_user": request_user
+        "request_user": request_user,
+        "ingredients" : recipe_ingredients
     }
 
     return render(request, "recipe.html", context=context)
@@ -254,18 +236,19 @@ def add_ingredients(request, instance_id):
                 }
 
                 return render(request, "add_ingredient.html", context=context)
-             
+
         else:
             form_instance = forms.IngredientForm()
     else:
         form_instance = forms.IngredientForm()
-    
-    # if 'term' in request.GET:
-    #     qs = models.IngredientModel.objects.filter(name__istartswith=request.GET.get('term'))
-    #     Ingredient_list = list()
-    #     for ingredient in qs:
-    #         Ingredient_list.append(ingredient.name)
-    #     return JsonResponse(Ingredient_list, safe=False)
+
+
+    if 'term' in request.GET:
+        qs = models.IngredientModel.objects.filter(name__istartswith=request.GET.get('term'))
+        Ingredient_list = list()
+        for ingredient in qs:
+            Ingredient_list.append(ingredient.name)
+        return JsonResponse(Ingredient_list, safe=False)
 
     context = {
         "id": instance_id,
@@ -273,6 +256,9 @@ def add_ingredients(request, instance_id):
         "form": form_instance,
         "ingredients": recipe_ingredients
     }
+
+
+#     return render(request, "add_ingredient.html", context=context)
 
     return render(request, "add_ingredient.html", context=context)
 
