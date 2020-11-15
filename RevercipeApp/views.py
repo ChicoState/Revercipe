@@ -45,18 +45,24 @@ def index(request):
 
             res = nav_form.getResults()
             type = nav_form.getType()
-            print(type)
             #RECIPE
             if type == "1":
                 recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
             #CATEGORY
             if type == "2":
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
+                recipes=[]
+                for cat in categoryObjects:
+                    for recipe in cat.recipes.all():
+                        recipes.append(recipe)
 
             #Ingredient
             if type == "3":
                 ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=res))
-                print(ingredientObjects)
+                recipes=[]
+                for ing in ingredientObjects:
+                    for recipe in ing.recipes.all():
+                        recipes.append(recipe)
 
     else:
         nav_form = forms.top_search_form()
@@ -189,7 +195,7 @@ def add_ingredients(request, instance_id):
                 }
 
                 return render(request, "add_ingredient.html", context=context)
-             
+
         else:
             form_instance = forms.IngredientForm()
     else:
@@ -218,4 +224,3 @@ def add_ingredients(request, instance_id):
 def add_nutrition(request, instance_id):
     context = {}
     return render(request, "add_nutrition.html", context=context)
-
