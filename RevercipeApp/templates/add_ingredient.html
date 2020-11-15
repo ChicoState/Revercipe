@@ -2,7 +2,33 @@
 {% load static %}
 {% block content  %}
 
-    <div class="card" style="width: 47%; height:688px; align-content: center;  
+
+<div class="card" style="width: 60%; height:60%; align-content: center;  margin: 0 auto; float: none;  margin-top: 2%;">
+        
+    {% include "recipe_card.html" %}
+
+        <table class="hover">
+            <thead>
+                <tr>
+                    <th width="150">Ingredient Name</th>
+                    <th width="150">Calories</th>
+                    <th width="100"></th>
+                </tr>
+            </thead>
+                
+                <tbody>
+                <form action="/add_ingredient/{{id}}/" enctype="multipart/form-data" method="POST">
+                    {% csrf_token %}                    
+                    <tr>
+                        <td>{{form.name}}</td>
+                        <td>{{form.calories}}</td>
+                        <td><input type = "submit" class="button expanded" value="Add Ingredient"/></td>
+                    </tr>
+                </form>
+                
+                {% for ingredient in ingredients%} 
+
+<!-- OLD CODE    <div class="card" style="width: 47%; height:688px; align-content: center;  
                             float: left;  margin-top: 1%;
                             margin-left: 1%; margin-right: 1%;">
             
@@ -15,12 +41,19 @@
             </div> 
 
             <table class="hover">
-                <thead>
+                <thead> -->
+
                     <tr>
                         <th width="150">Ingredient Name</th>
                         <th width="150">Calories</th>
                         <th width="100"></th>
                     </tr>
+
+<!--                 {% endfor %}
+             
+        </table>
+  </div> -->
+
                 </thead>
                     
                     <tbody>
@@ -63,6 +96,7 @@
             </div>
         </div>
 
+
         {% if success %}
             <div class="callout success" style="width: 49%; float: right; margin-right: 2%;" data-closable>
                 <h5>Ingredient successfully added</h5>
@@ -78,6 +112,7 @@
                 </button>
             </div>
         {% endif %}
+
 
 {% endblock %}
 
