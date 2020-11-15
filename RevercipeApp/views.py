@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
+
 from django.db.models import Q
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
@@ -8,6 +9,19 @@ from django.contrib.auth.models import User
 from . import models
 from . import forms
 # Create your views here.
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+
+from django.db.models import Q
+from django.contrib.auth import logout
+from django.views.decorators.csrf import csrf_exempt,csrf_protect
+from django.contrib.auth.models import User
+
+from . import models
+from . import forms
+# Create your views here.
+
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -48,6 +62,7 @@ def index(request):
         nav_form = forms.top_search_form()
         res = ""
         type = ""
+
 
     context = {
         "Title": "Recipes",
@@ -103,7 +118,6 @@ def create_recipe(request):
                 new_recipe.image = form_instance.cleaned_data["image"]
                 new_recipe.author = request.user
                 new_recipe.save()
-
                 return redirect("/add_ingredient/" + str(new_recipe.id) + "/")
         else:
             form_instance = forms.RecipeForm()
@@ -153,11 +167,34 @@ def add_ingredients(request, instance_id):
                 new_ingredient.save()
                 new_ingredient.recipes.add(recipe)
                 new_ingredient.save()
-                return redirect("/add_ingredient/" + str(instance_id) + "/")
+
+                context = {
+                    "id": instance_id,
+                    "recipe": recipe,
+                    "form": form_instance,
+                    "ingredients": recipe_ingredients,
+                    "success": True
+                }
+
+                return render(request, "add_ingredient.html", context=context)
+
+            if not form_instance.is_valid():
+
+                context = {
+                    "id": instance_id,
+                    "recipe": recipe,
+                    "form": form_instance,
+                    "ingredients": recipe_ingredients,
+                    "fail": True
+                }
+
+                return render(request, "add_ingredient.html", context=context)
+             
         else:
             form_instance = forms.IngredientForm()
     else:
         form_instance = forms.IngredientForm()
+
 
     if 'term' in request.GET:
         qs = models.IngredientModel.objects.filter(name__istartswith=request.GET.get('term'))
@@ -173,4 +210,12 @@ def add_ingredients(request, instance_id):
         "ingredients": recipe_ingredients
     }
 
+
+#     return render(request, "add_ingredient.html", context=context)
+
     return render(request, "add_ingredient.html", context=context)
+
+def add_nutrition(request, instance_id):
+    context = {}
+    return render(request, "add_nutrition.html", context=context)
+
