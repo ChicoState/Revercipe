@@ -24,7 +24,7 @@ class RecipeModel(models.Model):
     author = models.ForeignKey(User, default = "", on_delete=models.CASCADE)
     name = models.CharField(max_length = 300)
     description = models.CharField(max_length=500)
-    image = models.ImageField(max_length=144, upload_to='uploads/%Y/%m/%d/', blank=True, null=True)
+    image = models.ImageField(max_length=144, upload_to='uploads/recipes/', blank=True, null=True)
     comments = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True)
     def getname(self):
         return self.name
@@ -55,6 +55,7 @@ class CategoryModel(models.Model):
 
 class UserProfileModel(models.Model):
     django_user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
+    avatar = models.ImageField(max_length=144, upload_to='uploads/profile/', default='/static/images/default.png')
     pantry_ingredients = models.ForeignKey(IngredientModel, null=True, on_delete=models.CASCADE)
     comments = models.ForeignKey(Comment, null=True, on_delete=models.CASCADE)
     recipes = models.ForeignKey(RecipeModel, null=True, on_delete=models.CASCADE)

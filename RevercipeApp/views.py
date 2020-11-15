@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 from . import models
 from . import forms
@@ -35,6 +36,7 @@ def index(request):
             #RECIPE
             if type == "1":
                 recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
+           
             #CATEGORY
             if type == "2":
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
@@ -102,15 +104,56 @@ def index(request):
 def settings(request):
     return render(request, "settings.html")
 
-def my_recipes(request):
+def profile_view(request, user_id):
+    followee = models.User.objects.get(pk = user_id)
+    follows = models.Follower.objects.all()
+    count = 0
+
+    print(followee.profile.avatar)
+
+    for follow in follows:
+        if follow.following == followee:
+            count+=1
+
+    user = models.User.objects.get(pk=user_id)
+
     if request.method == "GET":
-        recipe_array = models.RecipeModel.objects.filter(author=request.user)
+        recipes = models.RecipeModel.objects.filter(author=request.user)
 
     context = {
-        "recipes": recipe_array
+        "recipes": recipes,
+        "user": user,
+        "request_user": request.user,
+        "num_followers": count
     }
 
-    return render(request, "myrecipes.html", context=context)
+    return render(request, "profile.html", context=context)
+
+
+
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        profile_form = forms.ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            return redirect('/profile/' + str(request.user.id) + '/')
+    else:
+        profile_form = forms.ProfileForm(instance=request.user.profile)
+
+    return render(request, 'update_profile.html', {'profile_form': profile_form})
+
+def follow(request, user_id):
+    followee = models.User.objects.get(pk = user_id)
+    follow_exists = models.Follower.objects.get(follower=request.user, following=followee)
+
+    if not follow_exists:
+        follow = models.Follower()
+        follow.follower = request.user
+        follow.following = followee
+        follow.save()
+
+    return redirect("/profile/{{user_id}}")
 
 def register(request):
     if request.method == "POST":
@@ -129,9 +172,6 @@ def register(request):
 def logout_view(request):
     logout(request)
     return redirect("/")
-
-def profile_view(request):
-    return render(request, "profile.html")
 
 def create_recipe(request):
     if request.method == "POST":
@@ -191,6 +231,7 @@ def add_ingredients(request, instance_id):
                 new_ingredient.save()
                 new_ingredient.recipes.add(recipe)
                 new_ingredient.save()
+                form_instance = forms.IngredientForm()
 
                 context = {
                     "id": instance_id,

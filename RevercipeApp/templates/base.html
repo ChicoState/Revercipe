@@ -41,9 +41,8 @@
 
         {% if user.is_authenticated %}
         <li class="has-dropdown not-click">
-          <a href="/profile/">{{user.username}}</a>
+          <a href="/profile/{{user.id}}/">{{user.username}}</a>
           <ul class="dropdown menu" data-dropdown-menu>
-            <li><a href="/myrecipes">My Recipes</a></li>
             <li><a href="/settings">Settings</a></li>
             <li> <a href='/logout/'>Logout</a></li>
           </ul>
