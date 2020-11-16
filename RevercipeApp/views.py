@@ -1,45 +1,40 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 
 from django.db.models import Q
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-from . import models
-from . import forms
-# Create your views here.
-
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-
-from django.db.models import Q
-from django.contrib.auth import logout
-from django.views.decorators.csrf import csrf_exempt,csrf_protect
-from django.contrib.auth.models import User
 
 from . import models
 from . import forms
 # Create your views here.
 
 
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.db.models import Q
-from django.contrib.auth import logout
-from django.views.decorators.csrf import csrf_exempt,csrf_protect
-from django.contrib.auth.models import User
-
-from . import models
-from . import forms
-# Create your views here.
 
 def index(request):
     ingredientObjects = []
     categoryObjects = []
-    recipes = models.RecipeModel.objects.all()
 
+    recipes = models.RecipeModel.objects.all()
+    recipe_list = {"recipes": []}
+
+    for recipe in recipes:
+        favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
+        
+        recipe_list["recipes"] += [{
+            "name": recipe.name,
+            "id": recipe.id,
+            "description": recipe.description,
+            "image": recipe.image,
+            "author": recipe.author,
+            "favorite": favorite[0].favorite
+        }]
+    
+   
     if request.method == "GET":
         nav_form = forms.top_search_form(request.GET)
         if nav_form.is_valid():
@@ -71,10 +66,9 @@ def index(request):
         res = ""
         type = ""
 
-
     context = {
         "Title": "Recipes",
-        "Recipes": recipes,
+        "Recipes": recipe_list["recipes"],
         #"form": form,
         "navForm": nav_form
     }
@@ -87,28 +81,54 @@ def settings(request):
 def profile_view(request, user_id):
     followee = models.User.objects.get(pk = user_id)
     follows = models.Follower.objects.all()
-    count = 0
-
-    print(followee.profile.avatar)
+    follow_count = 0
+    follower_count = 0
+    favorite_count = 0
 
     for follow in follows:
         if follow.following == followee:
-            count+=1
+            follow_count+=1
+
+    for follow in follows:
+        if follow.follower == followee:
+            follower_count+=1
+
+    
+
 
     user = models.User.objects.get(pk=user_id)
 
     if request.method == "GET":
-        recipes = models.RecipeModel.objects.filter(author=request.user)
+        recipes = models.RecipeModel.objects.filter(author=user)
+        recipe_list = {"recipes": []}
+
+        for recipe in recipes:
+            favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
+            
+            recipe_list["recipes"] += [{
+                "name": recipe.name,
+                "id": recipe.id,
+                "description": recipe.description,
+                "image": recipe.image,
+                "author": recipe.author,
+                "favorite": favorite[0].favorite
+            }]
+
+            favorites = models.Favorite.objects.filter(recipe=recipe)
+
+            for favorite in favorites:
+                favorite_count += favorite.favorite
 
     context = {
-        "recipes": recipes,
+        "recipes": recipe_list["recipes"],
         "user": user,
         "request_user": request.user,
-        "num_followers": count
+        "followers": follow_count,
+        "following": follower_count,
+        "fav_count": favorite_count
     }
 
     return render(request, "profile.html", context=context)
-
 
 
 @login_required
@@ -125,7 +145,14 @@ def update_profile(request):
 
 def follow(request, user_id):
     followee = models.User.objects.get(pk = user_id)
-    follow_exists = models.Follower.objects.get(follower=request.user, following=followee)
+    follower = models.User.objects.get(pk = request.user.id)
+    follows = models.Follower.objects.all()
+    follow_exists = False
+
+    for follow in follows:
+        if follow.following == followee:
+            if follow.follower == follower:
+                follow_exists = True
 
     if not follow_exists:
         follow = models.Follower()
@@ -133,8 +160,23 @@ def follow(request, user_id):
         follow.following = followee
         follow.save()
 
-    return redirect("/profile/{{user_id}}")
+    return redirect('/profile/'+ str(user_id) + '/')
 
+def favorite(request):
+    recipe = models.RecipeModel.objects.get(pk=request.GET.get('recipe_id'))
+    favorite = models.Favorite.objects.get(recipe=recipe, user=request.user)
+
+    if favorite.favorite:
+        favorite.favorite = 0
+    else:
+        favorite.favorite = 1
+
+    favorite.save()
+    print(favorite.favorite)
+
+    return HttpResponse()
+    
+            
 def register(request):
     if request.method == "POST":
         form_instance = forms.RegistrationForm(request.POST)

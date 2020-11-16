@@ -13,7 +13,6 @@ class IntegerRangeField(models.IntegerField):
         defaults.update(kwargs)
         return super(IntegerRangeField, self).formfield(**defaults)
 
-
 class Comment(models.Model):
     comment_text = models.TextField(max_length=800)
     rating = IntegerRangeField(min_value=0, max_value=5)
@@ -33,6 +32,11 @@ class RecipeModel(models.Model):
     def __str__(self):
         return self.name
 
+class Favorite(models.Model):
+    favorite = models.IntegerField(default=0)
+    recipe = models.ForeignKey(RecipeModel, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+
 class Nutrients(models.Model):
     name = models.CharField(max_length=30)
     amount = models.IntegerField()
@@ -40,9 +44,12 @@ class Nutrients(models.Model):
 
 class IngredientModel(models.Model):
     name = models.CharField(max_length=100)
+    amount = models.IntegerField(null=True)
+    amount_type = models.CharField(null=True, max_length=15)
     recipes = models.ManyToManyField(RecipeModel)
     calories = models.IntegerField(null=True)
     nutrients = models.ForeignKey(Nutrients, on_delete=models.CASCADE, null=True)
+
     def __str__(self):
         return self.name
 

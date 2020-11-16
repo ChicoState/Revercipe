@@ -2,8 +2,36 @@
 {% load static %}
 {% block content  %}
 
-<div style="height: 100%; width:100%; margin-top: 1%;">
-    <div style="width: 20%; float:left;">
+<div style="height: 100%; width:100%; margin-top: 2%;">
+    <div style="width: 75%; float:left;">
+
+            {% for recipe in recipes %}
+                <a href="/recipe/{{recipe.id}}/">
+                    <div class="card" style="width: 47%; height: 50%; align-content: center;  margin: 0 auto; margin-left:3%; float: left; margin-bottom: 1%;">
+                        <div class="card-divider" style="background-color: #1779ba;">
+                        <h4 style="color: white;">{{recipe.name}}</h4>
+                        </div>
+
+                        <div class="card-section" style="align-content: center; ">
+                            {% if recipe.image %}
+                                <img src="{{recipe.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left; margin-bottom: 3%;"/>
+                            {% endif %}
+                                <div style="float: right;">
+                                    {% if recipe.favorite %}
+                                        <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> </a>
+                                    {% elif not recipe.favorite %}
+                                        <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
+                                    {% endif %}
+                                 · <a href="comments/{{recipe.id}}/">Comments (10)</a>
+                                </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+
+    </div>
+
+    <div style="width: 22%; float:right;">
         <div class="card-info secondary" style="width:300px; height:300px;">
             <div class="card-section">
             <div class="article-details" style="text-align: center;">
@@ -13,15 +41,15 @@
                     {% else %}
                         <img src="/media/{{user.profile.avatar}}" style="width:150px; height:150px; border-radius: 50%;"></img> 
                     {% endif %}
-                
-                    <p> {{user.username}} <br/>
-                        <img src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> 200<br/>
-                        <img src='/static/images/fi-torsos-all.svg' style='height:25px; width:25px;'> {{num_followers}}<br />
+                    </br></br>
+                    <p style="font-size: 16px;"> {{user.username}} </p> 
+                    <p style="font-size: 14px;">
+                        <img src='/static/images/fi-torsos-all.svg' style='height:25px; width:25px;'> {{followers}} Followers · {{following}} Following · 
+                        <img src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> {{fav_count}} <br />
                     </p> 
                 
-                    {% if request_user.name == user.name %}
+                    {% if request_user.id == user.id %}
                         <a href="/update_profile/"> Update Profile </a>
-
                     {% else %}
                         <a href="/follow/{{user.id}}"> Follow </a>
                     {% endif %}
@@ -29,32 +57,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div style="width: 75%; float:left;">
-        <h3 style="text-align: center; ">{{user.username}}'s Recipes</h3>
-        {% if recipes %}
-            {% for recipe in recipes %}
-                <a href="/recipe/{{recipe.id}}/">
-                    <div class="card" style="width: 45%; height: 50%; align-content: center;  margin: 0 auto;
-                    margin-top: 2%; margin-left:3%; float: left;">
-
-                        <div class="card-divider" style="background-color: #1779ba;">
-                        <h4 style="color: white;">{{recipe.name}}</h4>
-                        </div>
-
-                        <div class="card-section" style="align-content: center; ">
-                            {% if recipe.image %}
-                            <img src="{{recipe.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left;"/>
-                            {% endif %}
-                            <div class="card-divider">
-                                <p>{{recipe.description}}</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            {% endfor %}
-        {% endif %}
     </div>
 </div>
 
