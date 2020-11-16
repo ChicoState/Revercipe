@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from .models import UserProfileModel
+
 
 
 from . import models
@@ -83,3 +85,9 @@ class IngredientForm(forms.Form):
         if commit:
             new_ingredient.save()
         return new_ingredient
+
+class ProfileForm(forms.ModelForm):
+
+    class Meta:
+        model = UserProfileModel
+        fields = ('avatar',)

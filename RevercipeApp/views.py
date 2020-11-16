@@ -1,44 +1,40 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
-
-from django.db.models import Q
-from django.contrib.auth import logout
-from django.views.decorators.csrf import csrf_exempt,csrf_protect
-from django.contrib.auth.models import User
-
-from . import models
-from . import forms
-# Create your views here.
-
-from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
 from django.db.models import Q
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+
 
 from . import models
 from . import forms
 # Create your views here.
 
 
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.db.models import Q
-from django.contrib.auth import logout
-from django.views.decorators.csrf import csrf_exempt,csrf_protect
-from django.contrib.auth.models import User
-
-from . import models
-from . import forms
-# Create your views here.
 
 def index(request):
     ingredientObjects = []
     categoryObjects = []
-    recipes = models.RecipeModel.objects.all()
 
+    recipes = models.RecipeModel.objects.all()
+    recipe_list = {"recipes": []}
+
+    for recipe in recipes:
+        favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
+        
+        recipe_list["recipes"] += [{
+            "name": recipe.name,
+            "id": recipe.id,
+            "description": recipe.description,
+            "image": recipe.image,
+            "author": recipe.author,
+            "favorite": favorite[0].favorite
+        }]
+    
+   
     if request.method == "GET":
         nav_form = forms.top_search_form(request.GET)
         if nav_form.is_valid():
@@ -48,6 +44,7 @@ def index(request):
             #RECIPE
             if type == "1":
                 recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
+           
             #CATEGORY
             if type == "2":
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
@@ -69,10 +66,9 @@ def index(request):
         res = ""
         type = ""
 
-
     context = {
         "Title": "Recipes",
-        "Recipes": recipes,
+        "Recipes": recipe_list["recipes"],
         #"form": form,
         "navForm": nav_form
     }
@@ -82,16 +78,105 @@ def index(request):
 def settings(request):
     return render(request, "settings.html")
 
-def my_recipes(request):
+def profile_view(request, user_id):
+    followee = models.User.objects.get(pk = user_id)
+    follows = models.Follower.objects.all()
+    follow_count = 0
+    follower_count = 0
+    favorite_count = 0
+
+    for follow in follows:
+        if follow.following == followee:
+            follow_count+=1
+
+    for follow in follows:
+        if follow.follower == followee:
+            follower_count+=1
+
+    
+
+
+    user = models.User.objects.get(pk=user_id)
+
     if request.method == "GET":
-        recipe_array = models.RecipeModel.objects.filter(author=request.user)
+        recipes = models.RecipeModel.objects.filter(author=user)
+        recipe_list = {"recipes": []}
+
+        for recipe in recipes:
+            favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
+            
+            recipe_list["recipes"] += [{
+                "name": recipe.name,
+                "id": recipe.id,
+                "description": recipe.description,
+                "image": recipe.image,
+                "author": recipe.author,
+                "favorite": favorite[0].favorite
+            }]
+
+            favorites = models.Favorite.objects.filter(recipe=recipe)
+
+            for favorite in favorites:
+                favorite_count += favorite.favorite
 
     context = {
-        "recipes": recipe_array
+        "recipes": recipe_list["recipes"],
+        "user": user,
+        "request_user": request.user,
+        "followers": follow_count,
+        "following": follower_count,
+        "fav_count": favorite_count
     }
 
-    return render(request, "myrecipes.html", context=context)
+    return render(request, "profile.html", context=context)
 
+
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        profile_form = forms.ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            return redirect('/profile/' + str(request.user.id) + '/')
+    else:
+        profile_form = forms.ProfileForm(instance=request.user.profile)
+
+    return render(request, 'update_profile.html', {'profile_form': profile_form})
+
+def follow(request, user_id):
+    followee = models.User.objects.get(pk = user_id)
+    follower = models.User.objects.get(pk = request.user.id)
+    follows = models.Follower.objects.all()
+    follow_exists = False
+
+    for follow in follows:
+        if follow.following == followee:
+            if follow.follower == follower:
+                follow_exists = True
+
+    if not follow_exists:
+        follow = models.Follower()
+        follow.follower = request.user
+        follow.following = followee
+        follow.save()
+
+    return redirect('/profile/'+ str(user_id) + '/')
+
+def favorite(request):
+    recipe = models.RecipeModel.objects.get(pk=request.GET.get('recipe_id'))
+    favorite = models.Favorite.objects.get(recipe=recipe, user=request.user)
+
+    if favorite.favorite:
+        favorite.favorite = 0
+    else:
+        favorite.favorite = 1
+
+    favorite.save()
+    print(favorite.favorite)
+
+    return HttpResponse()
+    
+            
 def register(request):
     if request.method == "POST":
         form_instance = forms.RegistrationForm(request.POST)
@@ -109,9 +194,6 @@ def register(request):
 def logout_view(request):
     logout(request)
     return redirect("/")
-
-def profile_view(request):
-    return render(request, "profile.html")
 
 def create_recipe(request):
     if request.method == "POST":
@@ -173,6 +255,7 @@ def add_ingredients(request, instance_id):
                 new_ingredient.save()
                 new_ingredient.recipes.add(recipe)
                 new_ingredient.save()
+                form_instance = forms.IngredientForm()
 
                 context = {
                     "id": instance_id,
