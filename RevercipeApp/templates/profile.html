@@ -22,7 +22,7 @@
                                     {% elif not recipe.favorite %}
                                         <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
                                     {% endif %}
-                                 · <a href="comments/{{recipe.id}}/">Comments (10)</a>
+                                 · <a href="/recipe/{{recipe.id}}/">Comments ({{recipe.comments}})</a>
                                 </div>
                         </div>
                     </div>
