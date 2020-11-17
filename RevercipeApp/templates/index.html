@@ -31,6 +31,7 @@
                         {% elif not recipes.favorite %}
                          <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
                         {% endif %}
+                        · <img alt="" src='/static/images/gold-star.png' style='height:17px; width:17px;'> {{recipes.rating}}</> 
                         · <a href="recipe/{{recipes.id}}/">Comments ({{recipes.comments}})</a>
                     </div>
 

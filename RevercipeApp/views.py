@@ -24,7 +24,14 @@ def index(request):
 
     for recipe in recipes:
         favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-        comments = models.Comment.objects.filter(recipe=recipe).count()
+        num_comments = models.Comment.objects.filter(recipe=recipe).count()
+        ratings =  models.Comment.objects.filter(recipe=recipe)
+        total = 0
+        for rating in ratings:
+            total += rating.rating
+
+        if num_comments != 0:
+            total = total/num_comments
         
         recipe_list["recipes"] += [{
             "name": recipe.name,
@@ -33,7 +40,8 @@ def index(request):
             "image": recipe.image,
             "author": recipe.author,
             "favorite": favorite[0].favorite,
-            "comments": comments
+            "comments": num_comments,
+            "rating": total
         }]
     
    
@@ -105,7 +113,14 @@ def profile_view(request, user_id):
 
         for recipe in recipes:
             favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-            comments = models.Comment.objects.filter(recipe=recipe).count()
+            num_comments = models.Comment.objects.filter(recipe=recipe).count()
+            ratings =  models.Comment.objects.filter(recipe=recipe)
+            total = 0
+            for rating in ratings:
+                total += rating.rating
+
+            if num_comments != 0:
+                total = total/num_comments
 
             recipe_list["recipes"] += [{
                 "name": recipe.name,
@@ -114,7 +129,8 @@ def profile_view(request, user_id):
                 "image": recipe.image,
                 "author": recipe.author,
                 "favorite": favorite[0].favorite,
-                "comments": comments
+                "comments": num_comments,
+                "rating": total
             }]
 
             favorites = models.Favorite.objects.filter(recipe=recipe)
