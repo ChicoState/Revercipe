@@ -18,4 +18,4 @@ urlpatterns = [
     path('follow/<int:user_id>/', views.follow),
     path('ajax/toggle_favorite/', views.favorite),
     path('profile/<int:instance_id>/ajax/toggle_favorite/', views.favorite)
-]
+    ]

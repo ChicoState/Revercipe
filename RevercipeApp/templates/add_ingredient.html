@@ -17,8 +17,10 @@
             <table class="hover">
                 <thead>
                     <tr>
-                        <th width="150">Ingredient Name</th>
-                        <th width="150">Calories</th>
+                        <th width="200">Ingredient Name</th>
+                        <th width="150">Measurement</th>
+                        <th width="100">Amount</th>
+                        <th width="100">Calories</th>
                         <th width="100"></th>
                     </tr>
                 </thead>
@@ -28,6 +30,8 @@
                         {% csrf_token %}
                         <tr>
                             <td>{{form.name}}</td>
+                            <td>{{form.amount_type}}</td> 
+                            <td>{{form.amount}}</td>
                             <td>{{form.calories}}</td>
                             <td><input type = "submit" class="button expanded" value="Add Ingredient"/></td>
                         </tr>
@@ -45,16 +49,20 @@
                 <table class="hover" style="height:500px; display:block; width:100%;">
                     <thead>
                         <tr>
-                            <th width="400">Ingredient Name</th>
-                            <th width="400">Calories</th>
+                            <th width="500">Ingredient Name</th>
+                            <th width="300">Measurement</th>
+                            <th width="100">Amount</th>
+                            <th width="100">Calories</th>
                         </tr>
                     </thead>
 
                     <tbody style=" overflow-y:scroll; height:450px; display:block; width:100%;">
                         {% for ingredient in ingredients%}
                                 <tr>
-                                <td width="400">{{ingredient.name}}</td>
-                                    <td width="400">{{ingredient.calories}}</td>
+                                <td width="500">{{ingredient.name}}</td>
+                                <td width="300">{{ingredient.amount_type}}</td>
+                                <td width="100">{{ingredient.amount}}</td>
+                                <td width="100">{{ingredient.calories}}</td>
                                 </tr>
                         {% endfor %}
                      </tbody>
