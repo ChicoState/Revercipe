@@ -52,7 +52,14 @@ class top_search_form(forms.Form):
     def getType(self):
         data = self.cleaned_data["search_by"]
         return data
-
+class filter_sidebar_form(forms.Form):
+    max_ingredients = forms.NumberInput()
+    ingredient_list = []
+    ingredient_add = forms.CharField(required=False)
+    def getIngredient(self):
+        data=self.cleaned_data["ingredient_add"]
+        return data
+    
 class RecipeForm(forms.Form):
     name = forms.CharField(label='Recipe Name',max_length = 100)
     description = forms.CharField(label='Recipe Description', max_length=500, widget=forms.Textarea(attrs={'rows':4, 'cols':5}))

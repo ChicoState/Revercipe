@@ -4,9 +4,9 @@
 
 <div class="grid-x">
     <div class="cell large-2">
-        <p>
-            Placeholder for filter
-        </p>
+     <form action = "/" method="GET">  
+      {{filter_form}}
+      <input type = "submit" class="button" value="Filter" />
     </div>
     <div class="cell auto"> 
         {% if Recipes %}

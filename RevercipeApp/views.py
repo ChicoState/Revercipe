@@ -38,9 +38,11 @@ def index(request):
     ingredientObjects = []
     categoryObjects = []
     recipes = models.RecipeModel.objects.all()
+    queryset =  Q()
 
     if request.method == "GET":
         nav_form = forms.top_search_form(request.GET)
+        filter_form = forms.filter_sidebar_form(request.GET)
         if nav_form.is_valid():
 
             res = nav_form.getResults()
@@ -63,8 +65,24 @@ def index(request):
                 for ing in ingredientObjects:
                     for recipe in ing.recipes.all():
                         recipes.append(recipe)
+        if filter_form.is_valid():
+            ingredient = filter_form.getIngredient()
+            request.session[ingredient] = ingredient
+            recipes = []
+            for i in request.session.keys():
+                print(i)
+                queryset =  Q(name__icontains=i)
+            ingredientObjects = models.IngredientModel.objects.filter(queryset)
+            print(ingredientObjects)
+            for i in ingredientObjects:
+                for recipe in i.recipes.all():
+                    recipes.append(recipe)
+
+
+
 
     else:
+        filter_form = forms.filter_sidebar_form()
         nav_form = forms.top_search_form()
         res = ""
         type = ""
@@ -74,7 +92,9 @@ def index(request):
         "Title": "Recipes",
         "Recipes": recipes,
         #"form": form,
-        "navForm": nav_form
+        "navForm": nav_form,
+        "filter_form": filter_form,
+        "ingredient_list":ingredientObjects,
     }
 
     return render(request, "index.html", context=context)
