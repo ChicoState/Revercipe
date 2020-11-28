@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html class="no-js" lang="en" dir="ltr">
   <head>
@@ -7,9 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Revercipe</title>
-    <link rel="stylesheet" href="{% static "css/foundation.css" %}">
-    <link rel="stylesheet" href="{% static "css/app.css" %}">
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
+    
     {% block css %}
     {% endblock %}
 
@@ -24,34 +26,31 @@
     </div>
 
     <!--STARTING TESTING -->
-    <div class="top-bar-left">
-    <form action = "/" method="GET">
-      <ul class="dropdown menu">
-      {{navForm.as_ul}}
-      <li><input type = "submit" class="button" value="Search" /></li>
-    </ul>
-    </form>
-  </div>
+      <div class="top-bar-left">
+      <form action = "/" method="GET">
+        <ul class="dropdown menu">
+        {{navForm.as_ul}}
+        <li><input type = "submit" class="button" value="Search" /></li>
+      </ul>
+      </form>
+    </div>
     {% csrf_token %}
     <!--ENDING TESTING -->
 
     <div class="top-bar-right">
     {% if request.path != '/login/' and request.path != '/register/' %}
       <ul class="dropdown menu" data-dropdown-menu>
-
         {% if user.is_authenticated %}
         <li class="has-dropdown not-click">
-          <a href="/profile/">{{user.username}}</a>
+          <a href="/profile/{{request.user.id}}">{{request.user.username}}</a>
           <ul class="dropdown menu" data-dropdown-menu>
-            <li><a href="/myrecipes">My Recipes</a></li>
-            <li><a href="/settings">Settings</a></li>
             <li> <a href='/logout/'>Logout</a></li>
           </ul>
         </li>
         {% endif %}
 
         {% if user.is_anonymous%}
-          <li><a class="button" href='/login/' >Login</a></li>
+          <li><a class="button" href='/login/'>Login</a></li>
         {% endif %}
       </ul>
 
@@ -59,7 +58,7 @@
   </div>
   </div>
 
-  <body>
+  <body onload="on_load()">
 
 
   {% block body %}
@@ -68,9 +67,11 @@
   {% endblock body %}
   </body>
 
+  <script type="text/javascript" src="{% static '/js/app.js' %}"></script>
+  <script src="{%static "js/script.js" %}"></script>
   <script src="{%static "js/vendor/jquery.js" %}"></script>
   <script src="{%static "js/vendor/what-input.js" %}"></script>
   <script src="{%static "js/vendor/foundation.js" %}"></script>
-  <script src="{%static "js/app.js" %}"></script>
-  <script src="{%static "js/script.js" %}"></script>
+  
+  
 </html>
