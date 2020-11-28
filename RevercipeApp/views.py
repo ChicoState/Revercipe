@@ -18,11 +18,8 @@ from . import forms
 def index(request):
     ingredientObjects = []
     categoryObjects = []
-<<<<<<< HEAD
     recipes = models.RecipeModel.objects.all()
     queryset =  Q()
-=======
->>>>>>> master
 
     recipes = models.RecipeModel.objects.all()
     recipe_list = {"recipes": []}
@@ -81,10 +78,8 @@ def index(request):
             request.session[ingredient] = ingredient
             recipes = []
             for i in request.session.keys():
-                print(i)
                 queryset =  Q(name__icontains=i)
             ingredientObjects = models.IngredientModel.objects.filter(queryset)
-            print(ingredientObjects)
             for i in ingredientObjects:
                 for recipe in i.recipes.all():
                     recipes.append(recipe)
@@ -95,6 +90,7 @@ def index(request):
         
 
     else:
+        request.session.clear()
         filter_form = forms.filter_sidebar_form()
         nav_form = forms.top_search_form()
         res = ""
