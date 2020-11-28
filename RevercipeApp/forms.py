@@ -70,12 +70,17 @@ class top_search_form(forms.Form):
     def getType(self):
         data = self.cleaned_data["search_by"]
         return data
+
 class filter_sidebar_form(forms.Form):
     max_ingredients = forms.NumberInput()
     ingredient_list = []
     ingredient_add = forms.CharField(required=False)
+    max_calories = forms.IntegerField(required=False)
     def getIngredient(self):
         data=self.cleaned_data["ingredient_add"]
+        return data
+    def getMaxCals(self):
+        data = self.cleaned_data["max_calories"]
         return data
     
 class RecipeForm(forms.Form):

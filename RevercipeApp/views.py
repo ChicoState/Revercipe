@@ -22,31 +22,7 @@ def index(request):
     queryset =  Q()
 
     recipes = models.RecipeModel.objects.all()
-    recipe_list = {"recipes": []}
-
-    for recipe in recipes:
-        favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-        num_comments = models.Comment.objects.filter(recipe=recipe).count()
-        ratings =  models.Comment.objects.filter(recipe=recipe)
-        total = 0
-        for rating in ratings:
-            total += rating.rating
-
-        if num_comments != 0:
-            total = total/num_comments
-        
-        recipe_list["recipes"] += [{
-            "name": recipe.name,
-            "id": recipe.id,
-            "description": recipe.description,
-            "image": recipe.image,
-            "author": recipe.author,
-            "favorite": favorite[0].favorite,
-            "comments": num_comments,
-            "rating": total
-        }]
-    
-   
+    recipe_list = {"recipes": []} 
     if request.method == "GET":
         nav_form = forms.top_search_form(request.GET)
         filter_form = forms.filter_sidebar_form(request.GET)
@@ -73,29 +49,51 @@ def index(request):
                 for ing in ingredientObjects:
                     for recipe in ing.recipes.all():
                         recipes.append(recipe)
-        if filter_form.is_valid():
+    if filter_form.is_valid():
             ingredient = filter_form.getIngredient()
-            request.session[ingredient] = ingredient
+            maxcals = filter_form.getMaxCals()
+            if(not request.session.has_key("ingredients")):
+                request.session["ingredients"] = []
+            request.session["ingredients"].append(ingredient)
+            request.session["maxcals"] = maxcals
             recipes = []
-            for i in request.session.keys():
+            for i in request.session["ingredients"]:
                 queryset =  Q(name__icontains=i)
             ingredientObjects = models.IngredientModel.objects.filter(queryset)
+            print(request.session["ingredients"])
+            if(request.session["maxcals"] != None):
+               ingredientObjects = models.IngredientModel.objects.filter(calories__lte = maxcals)
             for i in ingredientObjects:
                 for recipe in i.recipes.all():
                     recipes.append(recipe)
-
-
-
-
-        
-
+            
     else:
-        request.session.clear()
+        request.session.flush()
         filter_form = forms.filter_sidebar_form()
         nav_form = forms.top_search_form()
         res = ""
         type = ""
+    for recipe in recipes:
+        favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
+        num_comments = models.Comment.objects.filter(recipe=recipe).count()
+        ratings =  models.Comment.objects.filter(recipe=recipe)
+        total = 0
+        for rating in ratings:
+            total += rating.rating
 
+        if num_comments != 0:
+            total = total/num_comments
+        
+        recipe_list["recipes"] += [{
+            "name": recipe.name,
+            "id": recipe.id,
+            "description": recipe.description,
+            "image": recipe.image,
+            "author": recipe.author,
+            "favorite": favorite[0].favorite,
+            "comments": num_comments,
+            "rating": total
+        }]
     context = {
         "Title": "Recipes",
         "Recipes": recipe_list["recipes"],
