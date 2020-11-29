@@ -57,7 +57,8 @@ def index(request):
             maxcals = filter_form.getMaxCals()
             if(not request.session.has_key("ingredients")):
                 request.session["ingredients"] = []
-            request.session["ingredients"].append(ingredient)
+            if len(ingredient) != 0:
+                request.session["ingredients"].append(ingredient)
             request.session["maxcals"] = maxcals
             recipes = []
             for i in request.session["ingredients"]:

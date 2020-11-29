@@ -5,8 +5,9 @@
 <div class="grid-x">
     <div class="cell large-2">
         <ul>
-            Currently Filtering for:
+            
             {% if filtered_ingredients %}
+            Currently Filtering for:
                 {% for ingredient in filtered_ingredients %}
                     <li>{{ingredient}}</li>
                 {% endfor %}
@@ -18,8 +19,6 @@
     </form>
     {% csrf_token %}
     <form action='/' method="GET">
-        
-        
         <button type="submit" class="alert button", value="Clear" name="Clear">Clear Search</button>
     </form>
     </div>
