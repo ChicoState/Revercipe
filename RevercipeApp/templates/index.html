@@ -2,44 +2,63 @@
 {% load static %}
 {% block content  %}
 
-
-{% if Recipes %}
-    {% for recipes in Recipes %}
-
-            <div class="card" style="width: 45%; height: 50%; align-content: center;  margin: 0 auto;
-                                                margin-top: 2%; margin-left:3%; float: left;">
-
-                <div class="card-divider" style="background-color: #1779ba;">
-                    <h4 style="color: white;">{{recipes.name}}</h4>
+<div class="grid-x">
+    <div class="cell large-2">
+        <ul>
+            
+            {% if filtered_ingredients %}
+            Currently Filtering for:
+                {% for ingredient in filtered_ingredients %}
+                    <li>{{ingredient}}</li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+     <form action = "/" method="GET">  
+      {{filter_form}}
+      <input type = "submit" class="button" value="Filter" />
+    </form>
+    {% csrf_token %}
+    <form action='/' method="GET">
+        <button type="submit" class="alert button", value="Clear" name="Clear">Clear Search</button>
+    </form>
+    </div>
+    <div class="cell large-4"> 
+        {% if Recipes %}
+        {% for recipes in Recipes %}
+    
+                <div class="card" style="width: 45%; height: 50%; align-content: center;  margin: 0 auto;
+                                                    margin-top: 2%; margin-left:3%; float: left;">
+    
+                    <div class="card-divider" style="background-color: #1779ba;">
+                        <h4 style="color: white;">{{recipes.name}}</h4>
+                    </div>
+    
+                    <div class="card-section" style="align-content: center; ">
+                        <a href="recipe/{{recipes.id}}/">
+                            {% if recipes.image %}
+                            <img src="{{recipes.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left; margin-bottom: 3%;"/>
+                            {% endif %}
+                        </a>
+                 
+    
+                        <div style="float: left;">
+                           Author: <a href="profile/{{recipes.author.id}}"> {{recipes.author.username}} </a>
+                        </div>
+    
+                        <div style="float: right;">
+                            {% if recipes.favorite %}
+                               <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> </a>
+                            {% elif not recipes.favorite %}
+                             <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
+                            {% endif %}
+                            · <img alt="" src='/static/images/gold-star.png' style='height:17px; width:17px;'> {{recipes.rating}}</> 
+                            · <a href="recipe/{{recipes.id}}/">Comments ({{recipes.comments}})</a>
+                        </div>
+    
+                        </div>
+                    </div>
                 </div>
-
-                <div class="card-section" style="align-content: center; ">
-                    <a href="recipe/{{recipes.id}}/">
-                        {% if recipes.image %}
-                        <img src="{{recipes.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left; margin-bottom: 3%;"/>
-                        {% endif %}
-                    </a>
-             
-
-                    <div style="float: left;">
-                       Author: <a href="profile/{{recipes.author.id}}"> {{recipes.author.username}} </a>
-                    </div>
-
-                    <div style="float: right;">
-                        {% if recipes.favorite %}
-                           <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> </a>
-                        {% elif not recipes.favorite %}
-                         <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
-                        {% endif %}
-                        · <img alt="" src='/static/images/gold-star.png' style='height:17px; width:17px;'> {{recipes.rating}}</> 
-                        · <a href="recipe/{{recipes.id}}/">Comments ({{recipes.comments}})</a>
-                    </div>
-
-                    </div>
-                </div>
-            </div>
-    {% endfor %}
-{% endif %}
-
-{% endblock %}
-
+        {% endfor %}
+    {% endif %}
+    
+    {% endblock %}
