@@ -69,8 +69,7 @@ def index(request):
                ingredientObjects = models.IngredientModel.objects.filter(calories__lte = maxcals)
             for i in ingredientObjects:
                 for recipe in i.recipes.all():
-                    recipes.append(recipe)
-            
+                    recipes.append(recipe)  
     else:
         request.session["ingredients"] = []
         filter_form = forms.filter_sidebar_form()
