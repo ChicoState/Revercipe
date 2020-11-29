@@ -4,9 +4,24 @@
 
 <div class="grid-x">
     <div class="cell large-2">
+        <ul>
+            Currently Filtering for:
+            {% if filtered_ingredients %}
+                {% for ingredient in filtered_ingredients %}
+                    <li>{{ingredient}}</li>
+                {% endfor %}
+            {% endif %}
+        </ul>
      <form action = "/" method="GET">  
       {{filter_form}}
       <input type = "submit" class="button" value="Filter" />
+    </form>
+    {% csrf_token %}
+    <form action='/' method="GET">
+        
+        
+        <button type="submit" class="alert button", value="Clear" name="Clear">Clear Search</button>
+    </form>
     </div>
     <div class="cell large-4"> 
         {% if Recipes %}

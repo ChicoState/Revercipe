@@ -20,9 +20,12 @@ def index(request):
     categoryObjects = []
     recipes = models.RecipeModel.objects.all()
     queryset =  Q()
-
+    print(request.GET)
     recipes = models.RecipeModel.objects.all()
     recipe_list = {"recipes": []} 
+    if request.GET.get('Clear') == "Clear":
+        request.session["ingredients"] = []
+        request.session["maxcals"] = None
     if request.method == "GET":
         nav_form = forms.top_search_form(request.GET)
         filter_form = forms.filter_sidebar_form(request.GET)
@@ -33,7 +36,7 @@ def index(request):
             #RECIPE
             if type == "1":
                 recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
-           
+
             #CATEGORY
             if type == "2":
                 categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
@@ -49,7 +52,7 @@ def index(request):
                 for ing in ingredientObjects:
                     for recipe in ing.recipes.all():
                         recipes.append(recipe)
-    if filter_form.is_valid():
+        if filter_form.is_valid() and request.method== "GET" and 'ingredient_add' in request.GET:
             ingredient = filter_form.getIngredient()
             maxcals = filter_form.getMaxCals()
             if(not request.session.has_key("ingredients")):
@@ -68,7 +71,7 @@ def index(request):
                     recipes.append(recipe)
             
     else:
-        request.session.flush()
+        request.session["ingredients"] = []
         filter_form = forms.filter_sidebar_form()
         nav_form = forms.top_search_form()
         res = ""
@@ -94,13 +97,14 @@ def index(request):
             "comments": num_comments,
             "rating": total
         }]
+    filtered_ingredients = [i for i in request.session["ingredients"]]
     context = {
         "Title": "Recipes",
         "Recipes": recipe_list["recipes"],
         #"form": form,
         "navForm": nav_form,
         "filter_form": filter_form,
-        "ingredient_list":ingredientObjects,
+        "filtered_ingredients": filtered_ingredients,
     }
 
     return render(request, "index.html", context=context)
