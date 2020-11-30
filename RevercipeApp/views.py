@@ -18,10 +18,64 @@ from . import forms
 def index(request):
     ingredientObjects = []
     categoryObjects = []
-
     recipes = models.RecipeModel.objects.all()
-    recipe_list = {"recipes": []}
+    queryset =  Q()
+    print(request.GET)
+    recipes = models.RecipeModel.objects.all()
+    recipe_list = {"recipes": []} 
+    if request.GET.get('Clear') == "Clear":
+        request.session["ingredients"] = []
+        request.session["maxcals"] = None
+    if request.method == "GET":
+        nav_form = forms.top_search_form(request.GET)
+        filter_form = forms.filter_sidebar_form(request.GET)
+        if nav_form.is_valid():
 
+            res = nav_form.getResults()
+            type = nav_form.getType()
+            #RECIPE
+            if type == "1":
+                recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
+
+            #CATEGORY
+            if type == "2":
+                categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
+                recipes=[]
+                for cat in categoryObjects:
+                    for recipe in cat.recipes.all():
+                        recipes.append(recipe)
+
+            #Ingredient
+            if type == "3":
+                ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=res))
+                recipes=[]
+                for ing in ingredientObjects:
+                    for recipe in ing.recipes.all():
+                        recipes.append(recipe)
+        if filter_form.is_valid() and request.method== "GET" and 'ingredient_add' in request.GET:
+            ingredient = filter_form.getIngredient()
+            maxcals = filter_form.getMaxCals()
+            if(not request.session.has_key("ingredients")):
+                request.session["ingredients"] = []
+            if len(ingredient) != 0:
+                request.session["ingredients"].append(ingredient)
+            request.session["maxcals"] = maxcals
+            recipes = []
+            for i in request.session["ingredients"]:
+                queryset =  Q(name__icontains=i)
+            ingredientObjects = models.IngredientModel.objects.filter(queryset)
+            print(request.session["ingredients"])
+            if(request.session["maxcals"] != None):
+               ingredientObjects = models.IngredientModel.objects.filter(calories__lte = maxcals)
+            for i in ingredientObjects:
+                for recipe in i.recipes.all():
+                    recipes.append(recipe)  
+    else:
+        request.session["ingredients"] = []
+        filter_form = forms.filter_sidebar_form()
+        nav_form = forms.top_search_form()
+        res = ""
+        type = ""
     for recipe in recipes:
         favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
         num_comments = models.Comment.objects.filter(recipe=recipe).count()
@@ -43,46 +97,14 @@ def index(request):
             "comments": num_comments,
             "rating": total
         }]
-    
-   
-    if request.method == "GET":
-        nav_form = forms.top_search_form(request.GET)
-        if nav_form.is_valid():
-
-            res = nav_form.getResults()
-            type = nav_form.getType()
-            #RECIPE
-            if type == "1":
-                recipes = models.RecipeModel.objects.filter(Q(name__icontains=res))
-           
-            #CATEGORY
-            if type == "2":
-                categoryObjects = models.CategoryModel.objects.filter(Q(name__icontains=res))
-                recipes=[]
-                for cat in categoryObjects:
-                    for recipe in cat.recipes.all():
-                        recipes.append(recipe)
-
-            #Ingredient
-            if type == "3":
-                ingredientObjects = models.IngredientModel.objects.filter(Q(name__icontains=res))
-                recipes=[]
-                for ing in ingredientObjects:
-                    for recipe in ing.recipes.all():
-                        recipes.append(recipe)
-
-        
-
-    else:
-        nav_form = forms.top_search_form()
-        res = ""
-        type = ""
-
+    filtered_ingredients = [i for i in request.session["ingredients"]]
     context = {
         "Title": "Recipes",
         "Recipes": recipe_list["recipes"],
         #"form": form,
-        "navForm": nav_form
+        "navForm": nav_form,
+        "filter_form": filter_form,
+        "filtered_ingredients": filtered_ingredients,
     }
 
     return render(request, "index.html", context=context)
