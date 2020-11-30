@@ -5,7 +5,6 @@
 <div class="grid-x">
     <div class="cell large-2">
         <ul>
-            
             {% if filtered_ingredients %}
             Currently Filtering for:
                 {% for ingredient in filtered_ingredients %}
@@ -22,10 +21,9 @@
         <button type="submit" class="alert button", value="Clear" name="Clear">Clear Search</button>
     </form>
     </div>
-    <div class="cell large-4"> 
+    <div class="cell auto"> 
         {% if Recipes %}
         {% for recipes in Recipes %}
-    
                 <div class="card" style="width: 45%; height: 50%; align-content: center;  margin: 0 auto;
                                                     margin-top: 2%; margin-left:3%; float: left;">
     
@@ -57,8 +55,9 @@
     
                         </div>
                     </div>
+                    {% endfor %}
+                    {% endif %}
                 </div>
-        {% endfor %}
-    {% endif %}
     
+
     {% endblock %}
