@@ -20,9 +20,11 @@ def index(request):
     categoryObjects = []
     recipes = models.RecipeModel.objects.all()
     queryset =  Q()
-    print(request.GET)
     recipes = models.RecipeModel.objects.all()
     recipe_list = {"recipes": []} 
+
+    if(not request.session.has_key("ingredients")):
+        request.session["ingredients"] = []
     if request.GET.get('Clear') == "Clear":
         request.session["ingredients"] = []
         request.session["maxcals"] = None
@@ -77,73 +79,13 @@ def index(request):
         res = ""
         type = ""
     for recipe in recipes:
-        favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-        num_comments = models.Comment.objects.filter(recipe=recipe).count()
-        ratings =  models.Comment.objects.filter(recipe=recipe)
-        total = 0
-        for rating in ratings:
-            total += rating.rating
-
-        if num_comments != 0:
-            total = total/num_comments
-        
-        recipe_list["recipes"] += [{
-            "name": recipe.name,
-            "id": recipe.id,
-            "description": recipe.description,
-            "image": recipe.image,
-            "author": recipe.author,
-            "favorite": favorite[0].favorite,
-            "comments": num_comments,
-            "rating": total
-        }]
-    filtered_ingredients = [i for i in request.session["ingredients"]]
-    context = {
-        "Title": "Recipes",
-        "Recipes": recipe_list["recipes"],
-        #"form": form,
-        "navForm": nav_form,
-        "filter_form": filter_form,
-        "filtered_ingredients": filtered_ingredients,
-    }
-
-    return render(request, "index.html", context=context)
-
-def settings(request):
-    return render(request, "settings.html")
-
-def profile_view(request, user_id):
-    followee = models.User.objects.get(pk = user_id)
-    follows = models.Follower.objects.all()
-    follow_count = 0
-    follower_count = 0
-    favorite_count = 0
-
-    for follow in follows:
-        if follow.following == followee:
-            follow_count+=1
-
-    for follow in follows:
-        if follow.follower == followee:
-            follower_count+=1
-
-    user = models.User.objects.get(pk=user_id)
-
-    if request.method == "GET":
-        recipes = models.RecipeModel.objects.filter(author=user)
-        recipe_list = {"recipes": []}
-
-        for recipe in recipes:
+        if request.user.is_authenticated:
             favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-            num_comments = models.Comment.objects.filter(recipe=recipe).count()
-            ratings =  models.Comment.objects.filter(recipe=recipe)
-            total = 0
-            for rating in ratings:
-                total += rating.rating
-
-            if num_comments != 0:
-                total = total/num_comments
-
+    
+        num_comments = models.Comment.objects.filter(recipe=recipe).count()
+        total = getRatingTotal(recipe, num_comments)
+        
+        if request.user.is_authenticated:
             recipe_list["recipes"] += [{
                 "name": recipe.name,
                 "id": recipe.id,
@@ -154,19 +96,91 @@ def profile_view(request, user_id):
                 "comments": num_comments,
                 "rating": total
             }]
+        else:
+            recipe_list["recipes"] += [{
+                "name": recipe.name,
+                "id": recipe.id,
+                "description": recipe.description,
+                "image": recipe.image,
+                "author": recipe.author,
+                "comments": num_comments,
+                "rating": total
+            }]
 
-            favorites = models.Favorite.objects.filter(recipe=recipe)
+    filtered_ingredients = [i for i in request.session["ingredients"]]
+    context = {
+        "Title": "Recipes",
+        "Recipes": recipe_list["recipes"],
+        #"form": form,
+        "navForm": nav_form,
+        "filter_form": filter_form,
+        "authenticated": request.user.is_authenticated,
+        "filtered_ingredients": filtered_ingredients,
+    }
 
-            for favorite in favorites:
-                favorite_count += favorite.favorite
+    return render(request, "index.html", context=context)
+
+def settings(request):
+    return render(request, "settings.html")
+
+def profile_view(request, user_id):
+    user = models.User.objects.get(pk=user_id)
+    followers_count = models.Follower.objects.filter(following=user).count()
+    following_count = models.Follower.objects.filter(follower=user).count()
+    favorite_count =  getFavoriteCount(user)
+    
+    if request.user.is_authenticated:
+        try:
+            follow = models.Follower.objects.filter(follower=request.user, following=user)
+        except models.Follower.DoesNotExist:
+            follow = None
+    else:
+        follow = 0
+        
+
+    if request.method == "GET":
+        recipes = models.RecipeModel.objects.filter(author=user)
+        recipe_list = {"recipes": []}
+
+        for recipe in recipes:
+            if request.user.is_authenticated:
+                favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
+            
+
+            num_comments = models.Comment.objects.filter(recipe=recipe).count()
+            total = getRatingTotal(recipe, num_comments)
+
+            if request.user.is_authenticated:
+                recipe_list["recipes"] += [{
+                    "name": recipe.name,
+                    "id": recipe.id,
+                    "description": recipe.description,
+                    "image": recipe.image,
+                    "author": recipe.author,
+                    "favorite": favorite[0].favorite,
+                    "comments": num_comments,
+                    "rating": total
+                }]
+            else:
+                recipe_list["recipes"] += [{
+                    "name": recipe.name,
+                    "id": recipe.id,
+                    "description": recipe.description,
+                    "image": recipe.image,
+                    "author": recipe.author,
+                    "comments": num_comments,
+                    "rating": total
+                }]
 
     context = {
         "recipes": recipe_list["recipes"],
         "user": user,
         "request_user": request.user,
-        "followers": follow_count,
-        "following": follower_count,
-        "fav_count": favorite_count
+        "followers": followers_count,
+        "authenticated": request.user.is_authenticated,
+        "following": following_count,
+        "favorite_count": favorite_count,
+        "is_following": follow
     }
 
     return render(request, "profile.html", context=context)
@@ -185,21 +199,24 @@ def update_profile(request):
     return render(request, 'update_profile.html', {'profile_form': profile_form})
 
 def follow(request, user_id):
+    # Get who is going to be follow
     followee = models.User.objects.get(pk = user_id)
+
+    # Get who will be following
     follower = models.User.objects.get(pk = request.user.id)
-    follows = models.Follower.objects.all()
-    follow_exists = False
 
-    for follow in follows:
-        if follow.following == followee:
-            if follow.follower == follower:
-                follow_exists = True
+    try:
+        follow = models.Follower.objects.get(follower=follower, following=followee)
+    except models.Follower.DoesNotExist:
+        follow = None
 
-    if not follow_exists:
+    if follow != None: 
+        follow.delete()
+    else:
         follow = models.Follower()
         follow.follower = request.user
         follow.following = followee
-        follow.save()
+        follow.save() 
 
     return redirect('/profile/'+ str(user_id) + '/')
 
@@ -213,10 +230,8 @@ def favorite(request):
         favorite.favorite = 1
 
     favorite.save()
-    print(favorite.favorite)
 
     return HttpResponse()
-    
             
 def register(request):
     if request.method == "POST":
@@ -381,3 +396,117 @@ def add_ingredients(request, instance_id):
 def add_nutrition(request, instance_id):
     context = {}
     return render(request, "add_nutrition.html", context=context)
+
+
+def following_view(request):
+    user = models.User.objects.get(pk=request.user.id)
+    followers_count = models.Follower.objects.filter(following=user).count()
+    following_count = models.Follower.objects.filter(follower=user).count()
+    favorite_count =  getFavoriteCount(user)
+    following = models.Follower.objects.filter(follower=user)
+
+    if request.method == "GET":
+        recipes = models.RecipeModel.objects.all()
+        recipe_list = {"recipes": []}
+
+        for follow in following:
+            recipes = models.RecipeModel.objects.filter(author=follow.following)
+           
+            for recipe in recipes:
+                num_comments = models.Comment.objects.filter(recipe=recipe).count()
+                total = getRatingTotal(recipe, num_comments)
+                favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
+
+                recipe_list["recipes"] += [{
+                    "name": recipe.name,
+                    "id": recipe.id,
+                    "description": recipe.description,
+                    "image": recipe.image,
+                    "author": recipe.author,
+                    "favorite": favorite[0].favorite,
+                    "comments": num_comments,
+                    "rating": total
+                }]
+
+    context = {
+        "recipes": recipe_list["recipes"],
+        "user": request.user,
+        "followers": followers_count,
+        "following": following_count,
+        "favorite_count": favorite_count
+    }
+
+    return render(request, "following_recipes.html", context=context)
+
+
+def favorite_view(request):
+    user = models.User.objects.get(pk=request.user.id)
+    followers_count = models.Follower.objects.filter(following=user).count()
+    following_count = models.Follower.objects.filter(follower=user).count()
+    favorite_count =  getFavoriteCount(user)
+
+    if request.method == "GET":
+        recipes = models.RecipeModel.objects.all()
+        recipe_list = {"recipes": []}
+
+        for recipe in recipes:
+            try:
+                favorite = models.Favorite.objects.get(recipe=recipe, user=user)
+
+                if favorite.favorite == 1:
+                    num_comments = models.Comment.objects.filter(recipe=recipe).count()
+                    total = getRatingTotal(recipe, num_comments)
+
+                    recipe_list["recipes"] += [{
+                        "name": recipe.name,
+                        "id": recipe.id,
+                        "description": recipe.description,
+                        "image": recipe.image,
+                        "author": recipe.author,
+                        "favorite": favorite.favorite,
+                        "comments": num_comments,
+                        "rating": total
+                    }]
+
+            except models.Favorite.DoesNotExist:
+                favorite = None
+
+    context = {
+        "recipes": recipe_list["recipes"],
+        "user": request.user,
+        "followers": followers_count,
+        "following": following_count,
+        "favorite_count": favorite_count
+    }
+
+    return render(request, "following_recipes.html", context=context)
+
+
+def getRatingTotal(recipe, num_comments):
+    ratings = models.Comment.objects.filter(recipe=recipe)
+    
+    total = 0
+
+    for rating in ratings:
+        total += rating.rating
+
+    if num_comments != 0:
+        total = total/num_comments
+
+    return total
+
+
+def getFavoriteCount(user):
+    recipes = models.RecipeModel.objects.filter(author=user)
+    total = 0
+
+    for recipe in recipes:
+        favorites = models.Favorite.objects.filter(recipe=recipe)
+
+        for favorite in favorites:
+            if favorite.favorite == 1:
+                total += 1
+
+    return total
+
+    
