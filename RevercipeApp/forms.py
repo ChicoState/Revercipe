@@ -88,7 +88,7 @@ class RecipeForm(forms.Form):
     description = forms.CharField(label='Recipe Description', max_length=500, widget=forms.Textarea(attrs={'rows':4, 'cols':5}))
     image = forms.ImageField(label = 'Recipe Photo', required=False)
 
-    def save(self, request, commit=True):
+    def save(self, commit=True):
         new_recipe = models.RecipeModel(
             name = self.cleaned_data["name"],
             description = self.cleaned_data["description"],

@@ -274,6 +274,35 @@ def create_recipe(request):
 
     return render(request, "create_recipe.html", context=context)
 
+def edit_recipe(request, instance_id):
+    recipe = models.RecipeModel.objects.get(pk=instance_id)
+        
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            form_instance = forms.RecipeForm(request.POST, request.FILES)
+            if form_instance.is_valid():
+                recipe.name = form_instance.cleaned_data["name"]
+                recipe.description = form_instance.cleaned_data["description"]
+                recipe.image = form_instance.cleaned_data["image"]
+                recipe.save()
+                return redirect("/add_ingredient/" + str(instance_id) + "/")
+        else:
+            form_instance = forms.RecipeForm()
+    else:
+        form_instance = forms.RecipeForm()
+
+    context = {
+        "form": form_instance,
+        "recipe_id": instance_id
+    }
+
+    return render(request, "edit-recipe.html", context=context)
+
+def delete_recipe(request, instance_id):
+    recipe = models.RecipeModel.objects.get(pk=instance_id)
+    recipe.delete()
+    return redirect("/")
+
 
 def get_recipe(request, instance_id):
     request_user = request.user
