@@ -6,35 +6,44 @@
     <div style="width: 75%; float:left;">
 
             {% for recipe in recipes %}
-                <a href="/recipe/{{recipe.id}}/">
+                
                     <div class="card" style="width: 47%; height: 50%; align-content: center;  margin: 0 auto; margin-left:3%; float: left; margin-bottom: 1%;">
-                        <div class="card-divider" style="background-color: #1779ba;">
-                        <h4 style="color: white;">{{recipe.name}}</h4>
-                        </div>
+                        <div  class="card-divider" style="background-color: #1779ba; width: 100%;">
+                            <div style="float: left; width: 95%;">
+                                <h4 style="color: white;">{{recipe.name}}</h4>
+                            </div>
+                    
 
-                        <div class="card-section" style="align-content: center; ">
-                            {% if recipe.image %}
-                                <img src="{{recipe.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left; margin-bottom: 3%;"/>
-                            {% endif %}
+                            <div style="float: right; width: 5%; margin-top: 2%;">
+                                {% if recipe.author == request.user %}
+                                    <a href="/edit_recipe/{{recipe.id}}/"><img alt="" src='/static/images/edit-icon.svg' style='height:20px; width:20px;'></a>
+                                {% endif %}
+                            </div>
+                         </div>
+                         <a href="/recipe/{{recipe.id}}/">
+                            <div class="card-section" style="align-content: center; ">
+                                {% if recipe.image %}
+                                    <img src="{{recipe.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left; margin-bottom: 3%;"/>
+                                {% endif %}
 
-                                <div style="float: left;">
-                                    Author: <a href="profile/{{recipe.author.id}}"> {{recipe.author.username}} </a>
-                                </div>
+                                    <div style="float: left;">
+                                        Author: <a href="/profile/{{recipe.author.id}}"> {{recipe.author.username}} </a>
+                                    </div>
 
-                                <div style="float: right;">
-                                    {% if authenticated %}
-                                        {% if recipe.favorite %}
-                                            <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> </a>
-                                        {% elif not recipe.favorite %}
-                                            <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
-                                        {% endif %}
-                                    · {% endif %}
-                                    <img alt="" src='/static/images/gold-star.png' style='height:17px; width:17px;'> {{recipe.rating}}</>   
-                                 · <a href="/recipe/{{recipe.id}}/">Comments ({{recipe.comments}})</a>
-                                </div>
-                        </div>
+                                    <div style="float: right;">
+                                        {% if authenticated %}
+                                            {% if recipe.favorite %}
+                                                <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> </a>
+                                            {% elif not recipe.favorite %}
+                                                <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
+                                            {% endif %}
+                                        · {% endif %}
+                                        <img alt="" src='/static/images/gold-star.png' style='height:17px; width:17px;'> {{recipe.rating}}</>   
+                                    · <a href="/recipe/{{recipe.id}}/">Comments ({{recipe.comments}})</a>
+                                    </div>
+                            </div>
+                        </a>
                     </div>
-                </a>
             {% endfor %}
 
     </div>

@@ -62,7 +62,13 @@
 <div class="card-info info">
     <div class="card-section">
         <div class="article-details" style="margin-bottom: 1%;">
-            <span><img src="/media/{{comment.author.profile.avatar}}/" style="width:40px; height:40px; border-radius: 50%;"></img></span>
+
+            {% if comment.author.profile.avatar == '/static/images/default.png' %}
+                <span><img src="{{comment.author.profile.avatar}}" style="width:40px; height:40px; border-radius: 50%;"></img></span>
+            {% else %}
+                <span><img src="/media/{{comment.author.profile.avatar}}/" style="width:40px; height:40px; border-radius: 50%;"></img></span>
+            {% endif %}
+        
             <a><span class="author">{{comment.author.username}} </span></a> &#8226;
             
             {% for i in "x"|rjust:comment.rating %}
