@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
-    
+
     {% block css %}
     {% endblock %}
 
@@ -39,18 +39,19 @@
 
     <div class="top-bar-right">
     {% if request.path != '/login/' and request.path != '/register/' %}
-      <ul class="dropdown menu" data-dropdown-menu>
+      <ul class="menu dropdown" role="menubar" data-dropdown-menu >
         {% if user.is_authenticated %}
-        <li class="has-dropdown not-click">
+        <li class="has-submenu is-dropdown-submenu-parent is-down-arrow" role="menuitem" >
           <a href="/profile/{{request.user.id}}">{{request.user.username}}</a>
-          <ul class="dropdown menu" data-dropdown-menu>
-            <li> <a href='/logout/'>Logout</a></li>
+          <ul class="menu submenu is-dropdown-submenu first-sub vertical" data-submenu="" role="menu">
+            <li class="is-submenu-item is-dropdown-submenu-item" role="menuitem"> <a href='/logout/'>Logout</a></li>
+            <li class="is-submenu-item is-dropdown-submenu-item" role="menuitem"> <a href='/logout/'>Logout2</a></li>
           </ul>
         </li>
         {% endif %}
 
         {% if user.is_anonymous%}
-          <li><a class="button" href='/login/'>Login</a></li>
+          <li role="menuitem"><a class="button" href='/login/'>Login</a></li>
         {% endif %}
       </ul>
 
@@ -72,6 +73,6 @@
   <script src="{%static "js/vendor/jquery.js" %}"></script>
   <script src="{%static "js/vendor/what-input.js" %}"></script>
   <script src="{%static "js/vendor/foundation.js" %}"></script>
-  
-  
+
+
 </html>
