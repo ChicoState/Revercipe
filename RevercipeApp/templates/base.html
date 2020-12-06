@@ -18,45 +18,49 @@
   </head>
 
   <div class="top-bar">
-    <div class="top-bar-left">
-      <ul class="dropdown menu">
-        <li><a href="/">Revercipe</a></li>
-        <li><a href="/create_recipe/">Create Recipe</a></li>
-      </ul>
-    </div>
-
-    <!--STARTING TESTING -->
       <div class="top-bar-left">
-      <form action = "/" method="GET">
         <ul class="dropdown menu">
-        {{navForm.as_ul}}
-        <li><input type = "submit" class="button" value="Search" /></li>
-      </ul>
-      </form>
-    </div>
-    {% csrf_token %}
-    <!--ENDING TESTING -->
+          <li><a href="/">Revercipe</a></li>
+        </ul>
+      </div>
 
-    <div class="top-bar-right">
-    {% if request.path != '/login/' and request.path != '/register/' %}
-      <ul class="menu dropdown" role="menubar" data-dropdown-menu >
-        {% if user.is_authenticated %}
-        <li class="has-submenu is-dropdown-submenu-parent is-down-arrow" role="menuitem" >
-          <a href="/profile/{{request.user.id}}">{{request.user.username}}</a>
-          <ul class="menu submenu is-dropdown-submenu first-sub vertical" data-submenu="" role="menu">
-            <li class="is-submenu-item is-dropdown-submenu-item" role="menuitem"> <a href='/logout/'>Logout</a></li>
-            <li class="is-submenu-item is-dropdown-submenu-item" role="menuitem"> <a href='/logout/'>Logout2</a></li>
-          </ul>
-        </li>
+      <!--STARTING TESTING -->
+        {% if request.path != '/login/' and request.path != '/register/' %}
+            <div class="top-bar-left">
+            <form action = "/" method="GET">
+              <ul class="dropdown menu">
+              {{navForm.as_ul}}
+              <li><input type = "submit" class="button" value="Search" /></li>
+            </ul>
+            </form>
+          </div>
+          {% csrf_token %}
         {% endif %}
+      <!--ENDING TESTING -->
 
-        {% if user.is_anonymous%}
-          <li role="menuitem"><a class="button" href='/login/'>Login</a></li>
-        {% endif %}
-      </ul>
 
-    {% endif %}
-  </div>
+      {% if request.path != '/login/' and request.path != '/register/' %}
+      <div class="top-bar-right">
+          {% if user.is_authenticated %}
+            <ul class="dropdown menu" data-dropdown-menu>
+              <li>
+                <a href="/profile/{{request.user.id}}/">{{request.user.username}}</a>
+                <ul class="menu">
+                  <li> <a href='/favorite/'>Favorites</a></li>
+                  <li> <a href='/following/'>Following</a></li>
+                  <li> <a href='/logout/'>Logout</a></li>
+                </ul>
+              </li>
+            </ul>
+          {% endif %}
+
+          {% if user.is_anonymous%}
+            <ul class="dropdown menu" data-dropdown-menu>
+              <li><a href='/login/'>Login</a></li>
+            </ul>
+          {% endif %}
+        </div>
+      {% endif %}
   </div>
 
   <body onload="on_load()">
@@ -73,6 +77,6 @@
   <script src="{%static "js/vendor/jquery.js" %}"></script>
   <script src="{%static "js/vendor/what-input.js" %}"></script>
   <script src="{%static "js/vendor/foundation.js" %}"></script>
-
+  <script>$(document).foundation();</script>
 
 </html>

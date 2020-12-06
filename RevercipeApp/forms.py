@@ -71,12 +71,24 @@ class top_search_form(forms.Form):
         data = self.cleaned_data["search_by"]
         return data
 
+class filter_sidebar_form(forms.Form):
+    max_ingredients = forms.NumberInput()
+    ingredient_list = []
+    ingredient_add = forms.CharField(required=False)
+    max_calories = forms.IntegerField(required=False)
+    def getIngredient(self):
+        data=self.cleaned_data["ingredient_add"]
+        return data
+    def getMaxCals(self):
+        data = self.cleaned_data["max_calories"]
+        return data
+    
 class RecipeForm(forms.Form):
     name = forms.CharField(label='Recipe Name',max_length = 100)
     description = forms.CharField(label='Recipe Description', max_length=500, widget=forms.Textarea(attrs={'rows':4, 'cols':5}))
     image = forms.ImageField(label = 'Recipe Photo', required=False)
 
-    def save(self, request, commit=True):
+    def save(self, commit=True):
         new_recipe = models.RecipeModel(
             name = self.cleaned_data["name"],
             description = self.cleaned_data["description"],
