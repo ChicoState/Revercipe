@@ -1,18 +1,18 @@
 
-<div class="card-divider" style="background-color: #1779ba;margin-bottom:0;padding-bottom:0;">
-    <h4 style="color: white;">{{recipe.name}}</h4>
+<div class="card-divider re_card_box">
+    <h4 class="add_i_8">{{recipe.name}}</h4>
 </div>
 
-<div class="card-divider" style="background-color: #1779ba;margin-top:0;padding-top:0;">
-      <h6 style="color: white; ">Author: {{recipe.author}}</h6>
+<div class="card-divider re_card_box_2">
+      <h6 class="add_i_8">Author: {{recipe.author}}</h6>
 </div>
 
-<div class="card-section" style="align-content: center ">
-    <img src="{{recipe.image.url}}" style="width:30%; height:232px; object-fit: cover; float: left; margin-bottom: 1%;"/>
-    <div class="card-divider" style="width:70%; margin-bottom: 1%;">
-      <table class="hover" style="height:200px; display:block; width: 100%;">
-          <thead style="width:100%;">
-              <tr style="width:100%;">
+<div class="card-section center">
+    <img src="{{recipe.image.url}}" class="rec_card_1"/>
+    <div class="card-divider rec_card_5">
+      <table class="hover rec_card_6">
+          <thead class="rec_card_7">
+              <tr class="rec_card_7">
                   <th width="30%">Measurement</th>
                   <th width="20%">Amount</th>
                   <th width="40%">Ingredient Name</th>
@@ -20,9 +20,9 @@
               </tr>
           </thead>
 
-          <tbody style=" overflow-y:scroll; height:150px; width: 100%; display:block;">
+          <tbody class="rec_card_4">
               {% for ingredient in ingredients%}
-                  <tr style="width:100%;"> 
+                  <tr class="rec_card_7"> 
                     <td width="31%">{{ingredient.amount_type}}</td>
                     <td width="22%">{{ingredient.amount}}</td>
                     <td width="45%">{{ingredient.name}}</td>
@@ -35,7 +35,7 @@
 
     <p>Description: </p>
 
-    <div class="card-section" style="height:200px; border-style: solid; border-color: #1779ba; margin-bottom: 3%;">
+    <div class="card-section rec_card_2">
         <p>{{recipe.description}}</p>
     </div>
 
@@ -46,7 +46,7 @@
     <div id="comment-div">
         <form action="/recipe/{{recipe.id}}/" method="post">
             {% csrf_token %}
-            <div style="width: 10%;">
+            <div class="rec_card_8">
                 {{ comment_form.rating.label }}
                 {{ comment_form.rating }}
             </div>
@@ -61,18 +61,18 @@
 {% for comment in comments %}
 <div class="card-info info">
     <div class="card-section">
-        <div class="article-details" style="margin-bottom: 1%;">
-            <span><img src="/media/{{comment.author.profile.avatar}}/" style="width:40px; height:40px; border-radius: 50%;"></img></span>
+        <div class="article-details rec_card_9">
+            <span><img src="/media/{{comment.author.profile.avatar}}/" class="rec_card_3"></img></span>
             <a><span class="author">{{comment.author.username}} </span></a> &#8226;
             
             {% for i in "x"|rjust:comment.rating %}
-                <span><img alt=""  src='/static/images/gold-star.png' style='height:20px; width:20px;'></span>          
+                <span><img alt=""  src='/static/images/gold-star.png' class="b20x20"></span>          
             {% endfor %}
            
             &#8226;
             <span class="time"> {{ comment.created_on }}</span> 
         </div>
-        <p style="font-size: 18px;">{{ comment.comment_text }}</h3>
+        <p class="rec_card_10">{{ comment.comment_text }}</h3>
     </div>
  </div>
 {% endfor %}

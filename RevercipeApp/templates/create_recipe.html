@@ -2,13 +2,12 @@
 {% load static %}
 {% block content %}
 
-<div class="card" style="width: 45%; align-content: center;  margin: 0 auto;        
-                                     margin-top: 20px;    float: none;">
-    <div class="card-divider" style="background-color: #1779ba;">
-      <h4 style="color: white;">Create a New Recipe</h4>
+<div class="card create_r_1"></div> 
+    <div class="card-divider bg1779ba">
+      <h4 class="add_i_8">Create a New Recipe</h4>
     </div>
 
-    <div class="card-section" style="align-content: center; ">
+    <div class="card-section center" >
         <form action = "/create_recipe/" enctype="multipart/form-data" method="POST">
             {% csrf_token %}
             {{form.name.label}}

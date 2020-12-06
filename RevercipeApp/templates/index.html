@@ -24,32 +24,31 @@
     <div class="cell auto"> 
         {% if Recipes %}
         {% for recipes in Recipes %}
-                <div class="card" style="width: 45%; height: 50%; align-content: center;  margin: 0 auto;
-                                                    margin-top: 2%; margin-left:3%; float: left;">
+                <div class="card index_1" >
     
-                    <div class="card-divider" style="background-color: #1779ba;">
-                        <h4 style="color: white;">{{recipes.name}}</h4>
+                    <div class="card-divider bg1779ba">
+                        <h4 class="add_i_8">{{recipes.name}}</h4>
                     </div>
     
-                    <div class="card-section" style="align-content: center; ">
+                    <div class="card-section center">
                         <a href="recipe/{{recipes.id}}/">
                             {% if recipes.image %}
-                            <img src="{{recipes.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left; margin-bottom: 3%;"/>
+                            <img src="{{recipes.image.url}}" class="index_2"/>
                             {% endif %}
                         </a>
                  
     
-                        <div style="float: left;">
+                        <div class="index_4">
                            Author: <a href="profile/{{recipes.author.id}}"> {{recipes.author.username}} </a>
                         </div>
     
-                        <div style="float: right;">
+                        <div class="index_5">
                             {% if recipes.favorite %}
-                               <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> </a>
+                               <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/red-heart.jpg' class="index_3"> </a>
                             {% elif not recipes.favorite %}
-                             <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
+                             <a><img onclick="toggle_favorite({{recipes.id}})" alt=""  src='/static/images/fi-heart.svg' class="index_3"> </a>
                             {% endif %}
-                            · <img alt="" src='/static/images/gold-star.png' style='height:17px; width:17px;'> {{recipes.rating}}</> 
+                            · <img alt="" src='/static/images/gold-star.png' class="index_6"> {{recipes.rating}}</> 
                             · <a href="recipe/{{recipes.id}}/">Comments ({{recipes.comments}})</a>
                         </div>
     

@@ -5,16 +5,15 @@
 {% if recipes %}
     {% for recipe in recipes %}
         <a href="/recipe/{{recipe.id}}/">
-            <div class="card" style="width: 45%; height: 50%; align-content: center;  margin: 0 auto;
-            margin-top: 2%; margin-left:3%; float: left;">
+            <div class="card index_1">
 
-                <div class="card-divider" style="background-color: #1779ba;">
-                <h4 style="color: white;">{{recipe.name}}</h4>
+                <div class="card-divider bg_1779ba">
+                <h4 class="add_i_8">{{recipe.name}}</h4>
                 </div>
 
-                <div class="card-section" style="align-content: center; ">
+                <div class="card-section center">
                     {% if recipe.image %}
-                    <img src="{{recipe.image.url}}" style=" width:100%; height:400px; object-fit: cover; float: left;"/>
+                    <img src="{{recipe.image.url}}" class="myre_1"/>
                     {% endif %}
                     <div class="card-divider">
                         <p>{{recipe.description}}</p>

@@ -48,6 +48,10 @@
     width: 49%; 
     margin-top: 1%;
 }
+.add_i_8
+{
+    color: white;
+}
 .bg_1779ba
 {
     background-color: #1779ba;
@@ -55,4 +59,190 @@
 .center
 {
     align-content: center; 
+}
+.tcenter
+{
+    text-align: center;
+}
+.create_r_1
+{
+    width: 45%; 
+    align-content: center;  
+    margin: 0 auto;        
+    margin-top: 20px;    
+    float: none;
+}
+.index_1
+{
+    width: 45%; 
+    height: 50%; 
+    align-content: center;  
+    margin: 0 auto;
+    margin-top: 2%; 
+    margin-left:3%; 
+    float: left;
+}
+.index_2
+{
+    width:100%; 
+    height:400px; 
+    object-fit: cover; 
+    float: left; 
+    margin-bottom: 3%;
+}
+.index_3
+{
+    height:20px; 
+    width:20px;
+}
+.index_4
+{
+    float: left;
+}
+.index_5
+{
+    float: right;
+}
+.index_6
+{
+    height:17px; 
+    width:17px;
+}
+.myre_1
+{
+    width:100%; 
+    height:400px; 
+    object-fit: cover; 
+    float: left;
+}
+.pro_1
+{
+    width: 47%; 
+    height: 50%; 
+    align-content: center;  
+    margin: 0 auto; 
+    margin-left:3%; 
+    float: left; 
+    margin-bottom: 1%;
+}
+.pro_2
+{
+    height: 100%; 
+    width:100%; 
+    margin-top: 2%;
+}
+.pro_3
+{
+    width: 75%; 
+    float:left;
+}
+.pro_4
+{
+    width: 22%; 
+    float:right;
+}
+.pro_5
+{
+    font-size: 16px;
+}
+.pro_6
+{
+    font-size: 14px;
+}
+.text_align_1
+{ 
+    width:150px; 
+    height:150px; 
+    border-radius: 50%;
+}
+.b20x20
+{
+    height:20px; 
+    width:20px;
+}
+.b25x25
+{
+    height:25px; 
+    width:25px;
+}
+.px_300x300
+{
+    width:300px; 
+    height:300px;
+}
+.re_card_box
+{
+    background-color: #1779ba;
+    margin-bottom:0;
+    padding-bottom:0;
+}
+.re_card_box_2
+{
+    background-color: #1779ba;
+    margin-top:0;
+    padding-top:0;
+}
+.rec_card_1
+{
+    width:30%; 
+    height:232px; 
+    object-fit: cover; 
+    float: left; 
+    margin-bottom: 1%;
+}
+.rec_card_2
+{
+    height:200px; 
+    border-style: solid; 
+    border-color: #1779ba; 
+    margin-bottom: 3%;
+}
+.rec_card_3
+{
+    width:40px; 
+    height:40px; 
+    border-radius: 50%;
+}
+.rec_card_4
+{
+    overflow-y:scroll; 
+    height:150px; 
+    width: 100%; 
+    display:block;
+}
+.rec_card_5
+{
+    width:70%; 
+    margin-bottom: 1%;
+}
+.rec_card_6
+{
+    height:200px; 
+    display:block; 
+    width: 100%;
+}
+.rec_card_7
+{
+    width:100%;
+}
+.rec_card_8
+{
+    width:10%;
+}
+.rec_card_9
+{
+    margin-bottom: 1%;
+}
+.rec_card_10
+{
+    font-size: 18px;
+}
+.rec_1
+{
+    width: 75%; 
+    height:60%; 
+    align-content: center;  
+    margin: 0 auto; 
+    float: none;  
+    margin-top: 2%;
 }
