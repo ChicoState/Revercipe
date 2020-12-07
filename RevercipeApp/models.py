@@ -72,7 +72,7 @@ def save_user_profile(sender, instance, **kwargs):
 class Follower(models.Model):
     follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)
     following = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE)
-    
+
     class Meta:
         unique_together = ('follower', 'following')
 
@@ -85,6 +85,6 @@ class Comment(models.Model):
     recipe = models.ForeignKey(RecipeModel, on_delete=models.CASCADE, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return self.comment_text
