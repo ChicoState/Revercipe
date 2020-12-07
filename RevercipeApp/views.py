@@ -21,7 +21,7 @@ def index(request):
     recipes = models.RecipeModel.objects.all()
     queryset =  Q()
     recipes = models.RecipeModel.objects.all()
-    recipe_list = {"recipes": []} 
+    recipe_list = {"recipes": []}
 
     if(not request.session.has_key("ingredients")):
         request.session["ingredients"] = []
@@ -71,7 +71,7 @@ def index(request):
                ingredientObjects = models.IngredientModel.objects.filter(calories__lte = maxcals)
             for i in ingredientObjects:
                 for recipe in i.recipes.all():
-                    recipes.append(recipe)  
+                    recipes.append(recipe)
     else:
         request.session["ingredients"] = []
         filter_form = forms.filter_sidebar_form()
@@ -81,10 +81,10 @@ def index(request):
     for recipe in recipes:
         if request.user.is_authenticated:
             favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-    
+
         num_comments = models.Comment.objects.filter(recipe=recipe).count()
         total = getRatingTotal(recipe, num_comments)
-        
+
         if request.user.is_authenticated:
             recipe_list["recipes"] += [{
                 "name": recipe.name,
@@ -128,7 +128,7 @@ def profile_view(request, user_id):
     followers_count = models.Follower.objects.filter(following=user).count()
     following_count = models.Follower.objects.filter(follower=user).count()
     favorite_count =  getFavoriteCount(user)
-    
+
     if request.user.is_authenticated:
         try:
             follow = models.Follower.objects.filter(follower=request.user, following=user)
@@ -136,7 +136,7 @@ def profile_view(request, user_id):
             follow = None
     else:
         follow = 0
-        
+
 
     if request.method == "GET":
         recipes = models.RecipeModel.objects.filter(author=user)
@@ -145,7 +145,7 @@ def profile_view(request, user_id):
         for recipe in recipes:
             if request.user.is_authenticated:
                 favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-            
+
 
             num_comments = models.Comment.objects.filter(recipe=recipe).count()
             total = getRatingTotal(recipe, num_comments)
@@ -210,13 +210,13 @@ def follow(request, user_id):
     except models.Follower.DoesNotExist:
         follow = None
 
-    if follow != None: 
+    if follow != None:
         follow.delete()
     else:
         follow = models.Follower()
         follow.follower = request.user
         follow.following = followee
-        follow.save() 
+        follow.save()
 
     return redirect('/profile/'+ str(user_id) + '/')
 
@@ -232,7 +232,7 @@ def favorite(request):
     favorite.save()
 
     return HttpResponse()
-            
+
 def register(request):
     if request.method == "POST":
         form_instance = forms.RegistrationForm(request.POST)
@@ -276,7 +276,7 @@ def create_recipe(request):
 
 def edit_recipe(request, instance_id):
     recipe = models.RecipeModel.objects.get(pk=instance_id)
-        
+
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.RecipeForm(request.POST, request.FILES)
@@ -309,18 +309,26 @@ def get_recipe(request, instance_id):
     current_recipe = ""
     recipe_ingredients = []
     comment_list = []
-    
+
     if request.method == "GET":
         if request.user.is_authenticated:
             current_recipe = models.RecipeModel.objects.get(pk=instance_id)
-          
+            current_recipe_steps = current_recipe.description.splitlines()
+            i = 1
+            index = 0
+            for step in current_recipe_steps:
+                current_recipe_steps[index] = "Step " + str(i) + ": " + step
+                i += 1
+                index += 1
+
+
     recipe_ingredients = models.IngredientModel.objects.filter(recipes__name=current_recipe)
     comments = models.Comment.objects.all()
 
     for comment in comments:
         if comment.recipe == current_recipe:
             comment_list.append(comment)
-    
+
 
     if request.method == "POST":
         if request.user.is_authenticated:
@@ -341,6 +349,7 @@ def get_recipe(request, instance_id):
 
     context = {
         "recipe" : current_recipe,
+        "steps" : current_recipe_steps,
         "request_user": request_user,
         "ingredients" : recipe_ingredients,
         "comment_form": form_instance,
@@ -350,7 +359,7 @@ def get_recipe(request, instance_id):
     return render(request, "recipe.html", context=context)
 
 def comment(request, instance_id):
-    
+
     if request.method == 'POST':
         comment = models.Comment()
         comment
@@ -440,7 +449,7 @@ def following_view(request):
 
         for follow in following:
             recipes = models.RecipeModel.objects.filter(author=follow.following)
-           
+
             for recipe in recipes:
                 num_comments = models.Comment.objects.filter(recipe=recipe).count()
                 total = getRatingTotal(recipe, num_comments)
@@ -513,7 +522,7 @@ def favorite_view(request):
 
 def getRatingTotal(recipe, num_comments):
     ratings = models.Comment.objects.filter(recipe=recipe)
-    
+
     total = 0
 
     for rating in ratings:
@@ -537,5 +546,3 @@ def getFavoriteCount(user):
                 total += 1
 
     return total
-
-    
