@@ -15,7 +15,6 @@ urlpatterns = [
     path('delete_recipe/<int:instance_id>/', views.delete_recipe),
     path('recipe/<int:instance_id>/', views.get_recipe),
     path('add_ingredient/<int:instance_id>/', views.add_ingredients),
-    path('nutrition/<int:instance_id>/', views.add_nutrition),
     path('update_profile/', views.update_profile),
     path('follow/<int:user_id>/', views.follow),
     path('ajax/toggle_favorite/', views.favorite),

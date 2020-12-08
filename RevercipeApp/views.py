@@ -372,17 +372,20 @@ def add_ingredients(request, instance_id):
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.IngredientForm(request.POST)
-
+                
             if form_instance.is_valid():
-                new_ingredient = models.IngredientModel(name=form_instance.cleaned_data["name"])
-                new_ingredient.name = form_instance.cleaned_data["name"]
-                new_ingredient.calories = form_instance.cleaned_data["calories"]
-                new_ingredient.amount_type = form_instance.cleaned_data["amount_type"]
-                new_ingredient.amount = form_instance.cleaned_data["amount"]
-                new_ingredient.save()
-                new_ingredient.recipes.add(recipe)
-                new_ingredient.save()
+                form_instance.save(request, recipe)
                 form_instance = forms.IngredientForm()
+                # new_ingredient = models.IngredientModel(name=form_instance.cleaned_data["name"])
+                # new_ingredient.name = form_instance.cleaned_data["name"]
+                # new_ingredient.calories = form_instance.cleaned_data["calories"]
+                # new_ingredient.amount_type = form_instance.cleaned_data["amount_type"]
+                # new_ingredient.amount = form_instance.cleaned_data["amount"]
+                # new_ingredient.save()
+                # new_ingredient.recipes.add(recipe)
+                # new_ingredient.save()
+                # form_instance = forms.IngredientForm()
+
 
                 context = {
                     "id": instance_id,
@@ -426,15 +429,7 @@ def add_ingredients(request, instance_id):
         "ingredients": recipe_ingredients
     }
 
-
-#     return render(request, "add_ingredient.html", context=context)
-
     return render(request, "add_ingredient.html", context=context)
-
-def add_nutrition(request, instance_id):
-    context = {}
-    return render(request, "add_nutrition.html", context=context)
-
 
 def following_view(request):
     user = models.User.objects.get(pk=request.user.id)
