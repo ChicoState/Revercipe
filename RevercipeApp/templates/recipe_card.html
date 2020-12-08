@@ -22,7 +22,7 @@
 
           <tbody style=" overflow-y:scroll; height:150px; width: 100%; display:block;">
               {% for ingredient in ingredients%}
-                  <tr style="width:100%;"> 
+                  <tr style="width:100%;">
                     <td width="31%">{{ingredient.amount_type}}</td>
                     <td width="22%">{{ingredient.amount}}</td>
                     <td width="45%">{{ingredient.name}}</td>
@@ -33,10 +33,14 @@
       </table>
     </div>
 
-    <p>Description: </p>
+    <p>Instructions: </p>
 
-    <div class="card-section" style="height:200px; border-style: solid; border-color: #1779ba; margin-bottom: 3%;">
-        <p>{{recipe.description}}</p>
+    <div class="card-section" style="height:200px; border-style: solid; border-color: #1779ba; margin-bottom: 3%;" data-smooth-scroll>
+
+        {% for step in steps %}
+          <p>{{step}}</p>
+
+        {%endfor%}
     </div>
 
     <div id="comment-msg-div">
@@ -68,15 +72,15 @@
             {% else %}
                 <span><img src="/media/{{comment.author.profile.avatar}}/" style="width:40px; height:40px; border-radius: 50%;"></img></span>
             {% endif %}
-        
+
             <a><span class="author">{{comment.author.username}} </span></a> &#8226;
-            
+
             {% for i in "x"|rjust:comment.rating %}
-                <span><img alt=""  src='/static/images/gold-star.png' style='height:20px; width:20px;'></span>          
+                <span><img alt=""  src='/static/images/gold-star.png' style='height:20px; width:20px;'></span>
             {% endfor %}
-           
+
             &#8226;
-            <span class="time"> {{ comment.created_on }}</span> 
+            <span class="time"> {{ comment.created_on }}</span>
         </div>
         <p style="font-size: 18px;">{{ comment.comment_text }}</h3>
     </div>

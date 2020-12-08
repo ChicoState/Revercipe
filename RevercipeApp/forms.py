@@ -20,17 +20,17 @@ class searchForm(forms.Form):
         return data
 
 class CommentForm(forms.Form):
-    comment_text = forms.CharField(label='Comment:', 
+    comment_text = forms.CharField(label='Comment:',
         widget = forms.Textarea(attrs={"rows":3, 'max_length':2000, 'placeholder': 'Type comment here...'}), max_length=2000)
-   
-    rating = forms.IntegerField(label='Rating:', 
+
+    rating = forms.IntegerField(label='Rating:',
                                  min_value=1, max_value=5)
 
     def save(self, commit=True):
         new_comment = models.Comment(
             comment_text=self.cleaned_data["comment_text"],
             rating=self.cleaned_data["rating"])
-    
+
         if commit:
             new_comment.save()
         return new_comment
@@ -102,7 +102,7 @@ class RecipeForm(forms.Form):
     ]
 
     name = forms.CharField(label='Recipe Name',max_length = 100)
-    description = forms.CharField(label='Recipe Description', max_length=500, widget=forms.Textarea(attrs={'rows':4, 'cols':5}))
+    description = forms.CharField(label='Recipe Instructions', max_length=500, widget=forms.Textarea(attrs={'rows':4, 'cols':5}))
     image = forms.ImageField(label = 'Recipe Photo', required=False)
     categories = forms.CharField(label='What category does this recipe belong to?', widget=forms.Select(choices=CATEGORY_CHOICES))
 
