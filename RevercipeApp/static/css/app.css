@@ -36,6 +36,7 @@
     float: right; 
     margin-right: 2%;
 }
+
 .add_i_6
 {
     width: 49%; 
@@ -48,11 +49,29 @@
     width: 49%; 
     margin-top: 1%;
 }
+
 .bg_1779ba
 {
     background-color: #1779ba;
 }
+
 .center
 {
     align-content: center; 
+}
+
+.mt-2{
+    margin-top:2%;
+}
+
+.bg-color{
+    background-color: #1779ba;
+}
+
+.ac-center {
+    align-content: center;
+}
+
+.col-white{
+    color: white;
 }

@@ -9,7 +9,7 @@
 
     <title>Revercipe</title>
     <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
-    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" type="text/css" href="{%static "css/app.css" %}">
     <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
 
     {% block css %}
@@ -70,6 +70,7 @@
   {% block content %}
   {% endblock content %}
   {% endblock body %}
+
   </body>
 
   <script type="text/javascript" src="{% static '/js/app.js' %}"></script>
