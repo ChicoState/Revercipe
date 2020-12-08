@@ -26,13 +26,17 @@ class CommentForm(forms.Form):
     rating = forms.IntegerField(label='Rating:',
                                  min_value=1, max_value=5)
 
-    def save(self, commit=True):
+    def save(self, request, instance_id, commit=True):
         new_comment = models.Comment(
             comment_text=self.cleaned_data["comment_text"],
             rating=self.cleaned_data["rating"])
 
+        new_comment.recipe = models.RecipeModel.objects.get(pk=instance_id)
+        new_comment.author = models.User.objects.get(pk=request.user.id)
+
         if commit:
             new_comment.save()
+
         return new_comment
 
 class RegistrationForm(UserCreationForm):
@@ -123,6 +127,21 @@ class RecipeForm(forms.Form):
 
         return new_recipe
 
+    def edit(self, instance_id, commit=True):
+        edit_recipe = models.RecipeModel.objects.get(pk=instance_id)
+        edit_recipe.name = self.cleaned_data["name"]
+        edit_recipe.description = self.cleaned_data["description"]
+        edit_recipe.image = self.cleaned_data["image"]
+
+        if commit:
+            edit_recipe.save()
+            new_category = models.CategoryModel(name=self.cleaned_data["categories"])
+            new_category.save()
+            new_category.recipes.set(models.RecipeModel.objects.filter(pk=edit_recipe.id))
+            new_category.save()
+
+        return edit_recipe
+
 class IngredientForm(forms.Form):
     name = forms.CharField(label='Ingredient Name',max_length = 100)
     # name = forms.CharField(label='Ingredient Name',max_length = 100, widget=forms.TextInput(attrs={'id':'name'}))
@@ -130,8 +149,8 @@ class IngredientForm(forms.Form):
     amount = forms.IntegerField(label='Amount')
     amount_type = forms.CharField(label='Amount Type',max_length = 15)
 
-    def save(self, request, commit=True):
-        new_ingredient = models.RecipeModel(
+    def save(self, request, recipe, commit=True):
+        new_ingredient = models.IngredientModel(
             name = self.cleaned_data["name"],
             calories = self.cleaned_data["calories"],
             amount = self.cleaned_data["amount"],
@@ -139,6 +158,8 @@ class IngredientForm(forms.Form):
         )
 
         if commit:
+            new_ingredient.save()
+            new_ingredient.recipes.add(recipe)
             new_ingredient.save()
         return new_ingredient
 
