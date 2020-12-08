@@ -8,12 +8,9 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-
 from . import models
 from . import forms
 # Create your views here.
-
-
 
 def index(request):
     ingredientObjects = []
@@ -167,8 +164,6 @@ def index(request):
 
     return render(request, "index.html", context=context)
 
-def settings(request):
-    return render(request, "settings.html")
 
 def profile_view(request, user_id):
     user = models.User.objects.get(pk=user_id)
@@ -198,16 +193,16 @@ def profile_view(request, user_id):
             total = getRatingTotal(recipe, num_comments)
 
             if request.user.is_authenticated:
-                recipe_list["recipes"] += [{
-                    "name": recipe.name,
-                    "id": recipe.id,
-                    "description": recipe.description,
-                    "image": recipe.image,
-                    "author": recipe.author,
-                    "favorite": favorite[0].favorite,
-                    "comments": num_comments,
-                    "rating": total
-                }]
+                  recipe_list["recipes"] += [{
+                        "name": recipe.name,
+                        "id": recipe.id,
+                        "description": recipe.description,
+                        "image": recipe.image,
+                        "author": recipe.author,
+                        "favorite": favorite[0].favorite,
+                        "comments": num_comments,
+                        "rating": total
+                    }]
             else:
                 recipe_list["recipes"] += [{
                     "name": recipe.name,
@@ -245,6 +240,7 @@ def update_profile(request):
 
     return render(request, 'update_profile.html', {'profile_form': profile_form})
 
+
 def follow(request, user_id):
     # Get who is going to be follow
     followee = models.User.objects.get(pk = user_id)
@@ -267,18 +263,6 @@ def follow(request, user_id):
 
     return redirect('/profile/'+ str(user_id) + '/')
 
-def favorite(request):
-    recipe = models.RecipeModel.objects.get(pk=request.GET.get('recipe_id'))
-    favorite = models.Favorite.objects.get(recipe=recipe, user=request.user)
-
-    if favorite.favorite:
-        favorite.favorite = 0
-    else:
-        favorite.favorite = 1
-
-    favorite.save()
-
-    return HttpResponse()
 
 def register(request):
     if request.method == "POST":
@@ -294,9 +278,11 @@ def register(request):
 
     return render(request, "registration/register.html", context=context)
 
+
 def logout_view(request):
     logout(request)
     return redirect("/")
+
 
 def create_recipe(request):
     if request.method == "POST":
@@ -316,17 +302,13 @@ def create_recipe(request):
 
     return render(request, "create_recipe.html", context=context)
 
-def edit_recipe(request, instance_id):
-    recipe = models.RecipeModel.objects.get(pk=instance_id)
 
+def edit_recipe(request, instance_id):
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.RecipeForm(request.POST, request.FILES)
             if form_instance.is_valid():
-                recipe.name = form_instance.cleaned_data["name"]
-                recipe.description = form_instance.cleaned_data["description"]
-                recipe.image = form_instance.cleaned_data["image"]
-                recipe.save()
+                form_instance.edit(instance_id)
                 return redirect("/add_ingredient/" + str(instance_id) + "/")
         else:
             form_instance = forms.RecipeForm()
@@ -345,7 +327,6 @@ def delete_recipe(request, instance_id):
     recipe.delete()
     return redirect("/")
 
-
 def get_recipe(request, instance_id):
     request_user = request.user
     current_recipe = ""
@@ -355,14 +336,7 @@ def get_recipe(request, instance_id):
     if request.method == "GET":
         if request.user.is_authenticated:
             current_recipe = models.RecipeModel.objects.get(pk=instance_id)
-            current_recipe_steps = current_recipe.description.splitlines()
-            i = 1
-            index = 0
-            for step in current_recipe_steps:
-                current_recipe_steps[index] = "Step " + str(i) + ": " + step
-                i += 1
-                index += 1
-
+            current_recipe_steps = transform_recipe_steps(current_recipe)
 
     recipe_ingredients = models.IngredientModel.objects.filter(recipes__name=current_recipe)
     comments = models.Comment.objects.all()
@@ -371,17 +345,11 @@ def get_recipe(request, instance_id):
         if comment.recipe == current_recipe:
             comment_list.append(comment)
 
-
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.CommentForm(request.POST)
             if form_instance.is_valid():
-                new_comment = models.Comment()
-                new_comment.comment_text = form_instance.cleaned_data["comment_text"]
-                new_comment.rating = form_instance.cleaned_data["rating"]
-                new_comment.recipe = models.RecipeModel.objects.get(pk=instance_id)
-                new_comment.author = models.User.objects.get(pk=request.user.id)
-                new_comment.save(instance_id)
+                form_instance.save(request, instance_id)
                 form_instance = forms.CommentForm()
                 return redirect("/recipe/" + str(instance_id) + "/")
         else:
@@ -400,11 +368,7 @@ def get_recipe(request, instance_id):
 
     return render(request, "recipe.html", context=context)
 
-def comment(request, instance_id):
 
-    if request.method == 'POST':
-        comment = models.Comment()
-        comment
 
 @csrf_exempt
 def add_ingredients(request, instance_id):
@@ -418,17 +382,7 @@ def add_ingredients(request, instance_id):
             if form_instance.is_valid():
                 form_instance.save(request, recipe)
                 form_instance = forms.IngredientForm()
-                # new_ingredient = models.IngredientModel(name=form_instance.cleaned_data["name"])
-                # new_ingredient.name = form_instance.cleaned_data["name"]
-                # new_ingredient.calories = form_instance.cleaned_data["calories"]
-                # new_ingredient.amount_type = form_instance.cleaned_data["amount_type"]
-                # new_ingredient.amount = form_instance.cleaned_data["amount"]
-                # new_ingredient.save()
-                # new_ingredient.recipes.add(recipe)
-                # new_ingredient.save()
-                # form_instance = forms.IngredientForm()
-
-
+        
                 context = {
                     "id": instance_id,
                     "recipe": recipe,
@@ -440,7 +394,6 @@ def add_ingredients(request, instance_id):
                 return render(request, "add_ingredient.html", context=context)
 
             if not form_instance.is_valid():
-
                 context = {
                     "id": instance_id,
                     "recipe": recipe,
@@ -557,6 +510,7 @@ def favorite_view(request):
     return render(request, "following_recipes.html", context=context)
 
 
+
 def getRatingTotal(recipe, num_comments):
     ratings = models.Comment.objects.filter(recipe=recipe)
 
@@ -571,6 +525,7 @@ def getRatingTotal(recipe, num_comments):
     return total
 
 
+
 def getFavoriteCount(user):
     recipes = models.RecipeModel.objects.filter(author=user)
     total = 0
@@ -583,3 +538,32 @@ def getFavoriteCount(user):
                 total += 1
 
     return total
+
+
+def favorite(request):
+    recipe = models.RecipeModel.objects.get(pk=request.GET.get('recipe_id'))
+    favorite = models.Favorite.objects.get(recipe=recipe, user=request.user)
+
+    if favorite.favorite:
+        favorite.favorite = 0
+    else:
+        favorite.favorite = 1
+
+    favorite.save()
+
+    return HttpResponse()
+
+
+
+def transform_recipe_steps(current_recipe):
+    current_recipe_steps = current_recipe.description.splitlines()
+    i = 1
+    index = 0
+   
+    for step in current_recipe_steps:
+        current_recipe_steps[index] = "Step " + str(i) + ": " + step
+        i += 1
+        index += 1
+    
+    return current_recipe_steps
+

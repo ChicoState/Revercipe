@@ -8,7 +8,6 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view()),
     path('register/', views.register),
     path('logout/', views.logout_view),
-    path('settings/', views.settings),
     path('profile/<int:user_id>/', views.profile_view),
     path('create_recipe/', views.create_recipe),
     path('edit_recipe/<int:instance_id>/', views.edit_recipe),
