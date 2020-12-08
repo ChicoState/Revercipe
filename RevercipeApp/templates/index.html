@@ -3,16 +3,30 @@
 {% block content  %}
 
 <div style="height: 100%; width:100%;">
-    <div style="width: 15%; float:left; margin-left: 1%;">
+    <div style="width: 15%; float:left; margin-left: 1%; margin-top: 2%;">
 
         <ul>
+            {% if filtered_ingredients or filtered_categories %}
+            <h5>Filters</h5> 
+    
             {% if filtered_ingredients %}
-            Currently Filtering for:
+            Ingredients: <br>
                 {% for ingredient in filtered_ingredients %}
                     <li>{{ingredient}}</li>
                 {% endfor %}
             {% endif %}
+            
+            <br>
+
+            {% if filtered_categories %}
+            Categories: <br>
+                {% for category in filtered_categories %}
+                    <li>{{category}}</li>
+                {% endfor %}
+            {% endif %}
+            {% endif %}
         </ul>
+        
      <form action = "/" method="GET">  
       {{filter_form}}
       <input type = "submit" class="button" value="Filter" />

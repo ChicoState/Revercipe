@@ -76,27 +76,51 @@ class filter_sidebar_form(forms.Form):
     ingredient_list = []
     ingredient_add = forms.CharField(required=False)
     max_calories = forms.IntegerField(required=False)
+    category_add = forms.CharField(required=False)
+
     def getIngredient(self):
         data=self.cleaned_data["ingredient_add"]
         return data
     def getMaxCals(self):
         data = self.cleaned_data["max_calories"]
         return data
-
+    def getCategory(self):
+        data = self.cleaned_data["category_add"]
+        return data
+    
 class RecipeForm(forms.Form):
+    CATEGORY_CHOICES=[
+        ('gluten free', 'Gluten Free'),
+        ('vegan', 'Vegan'),
+        ('keto', 'Keto'),
+        ('mediterranean', 'Mediterranean'),
+        ('mexican', 'Mexican'),
+        ('breakfast', 'Breakfast'),
+        ('lunch', 'Lunch'),
+        ('dinner', 'Dinner'),
+        ('brunch', 'Brunch')      
+    ]
+
     name = forms.CharField(label='Recipe Name',max_length = 100)
     description = forms.CharField(label='Recipe Instructions', max_length=500, widget=forms.Textarea(attrs={'rows':4, 'cols':5}))
     image = forms.ImageField(label = 'Recipe Photo', required=False)
+    categories = forms.CharField(label='What category does this recipe belong to?', widget=forms.Select(choices=CATEGORY_CHOICES))
 
-    def save(self, commit=True):
+    def save(self, request, commit=True):
         new_recipe = models.RecipeModel(
             name = self.cleaned_data["name"],
             description = self.cleaned_data["description"],
-            image = self.cleaned_data["image"]
+            image = self.cleaned_data["image"],
+            author = request.user
         )
 
         if commit:
             new_recipe.save()
+            new_category = models.CategoryModel(name=self.cleaned_data["categories"])
+            new_category.save()
+            new_category.recipes.set(models.RecipeModel.objects.filter(pk=new_recipe.id))
+            new_category.save()
+
         return new_recipe
 
 class IngredientForm(forms.Form):
