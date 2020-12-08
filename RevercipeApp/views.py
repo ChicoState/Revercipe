@@ -25,9 +25,18 @@ def index(request):
 
     if(not request.session.has_key("ingredients")):
         request.session["ingredients"] = []
+    
+    if(not request.session.has_key("maxcals")):
+        request.session["ingredients"] = None
+    
+    if(not request.session.has_key("categories")):
+        request.session["categories"] = []
+        
     if request.GET.get('Clear') == "Clear":
         request.session["ingredients"] = []
         request.session["maxcals"] = None
+        request.session["categories"] = []
+
     if request.method == "GET":
         nav_form = forms.top_search_form(request.GET)
         filter_form = forms.filter_sidebar_form(request.GET)
@@ -54,30 +63,56 @@ def index(request):
                 for ing in ingredientObjects:
                     for recipe in ing.recipes.all():
                         recipes.append(recipe)
+                        
         if filter_form.is_valid() and request.method== "GET" and 'ingredient_add' in request.GET:
             ingredient = filter_form.getIngredient()
             maxcals = filter_form.getMaxCals()
+            category = filter_form.getCategory()
+
             if(not request.session.has_key("ingredients")):
                 request.session["ingredients"] = []
+            
+            if(not request.session.has_key("categories")):
+                request.session["categories"] = []
+
             if len(ingredient) != 0:
                 request.session["ingredients"].append(ingredient)
+
+            if len(category) != 0:
+                request.session["categories"].append(category)
+
             request.session["maxcals"] = maxcals
             recipes = []
+
             for i in request.session["ingredients"]:
-                queryset =  Q(name__icontains=i)
+                queryset =  Q(name__icontains=i) 
             ingredientObjects = models.IngredientModel.objects.filter(queryset)
-            print(request.session["ingredients"])
+
+            for i in request.session["categories"]:
+                queryset =  Q(name__icontains=i) 
+            categoryObjects = models.CategoryModel.objects.filter(queryset)
+    
             if(request.session["maxcals"] != None):
                ingredientObjects = models.IngredientModel.objects.filter(calories__lte = maxcals)
+
             for i in ingredientObjects:
                 for recipe in i.recipes.all():
-                    recipes.append(recipe)  
+                    recipes.append(recipe) 
+
+            for recipe in recipes:
+                for category in categoryObjects:
+                    if recipe not in category.recipes.all():
+                        recipes.remove(recipe)
+
+            filter_form = forms.filter_sidebar_form()                  
     else:
         request.session["ingredients"] = []
+        request.session["categories"] = []
         filter_form = forms.filter_sidebar_form()
         nav_form = forms.top_search_form()
         res = ""
         type = ""
+
     for recipe in recipes:
         if request.user.is_authenticated:
             favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
@@ -107,15 +142,27 @@ def index(request):
                 "rating": total
             }]
 
-    filtered_ingredients = [i for i in request.session["ingredients"]]
+
+    filtered_ingredients = []
+
+    for ingredient in request.session["ingredients"]:
+        if ingredient not in filtered_ingredients:
+            filtered_ingredients.append(ingredient)
+
+    filtered_categories = []
+
+    for category in request.session["categories"]:
+        if category not in filtered_categories:
+            filtered_categories.append(category)
+
     context = {
         "Title": "Recipes",
         "Recipes": recipe_list["recipes"],
-        #"form": form,
         "navForm": nav_form,
         "filter_form": filter_form,
         "authenticated": request.user.is_authenticated,
         "filtered_ingredients": filtered_ingredients,
+        "filtered_categories": filtered_categories
     }
 
     return render(request, "index.html", context=context)
@@ -256,12 +303,7 @@ def create_recipe(request):
         if request.user.is_authenticated:
             form_instance = forms.RecipeForm(request.POST, request.FILES)
             if form_instance.is_valid():
-                new_recipe = models.RecipeModel(name=form_instance.cleaned_data["name"])
-                new_recipe.name = form_instance.cleaned_data["name"]
-                new_recipe.description = form_instance.cleaned_data["description"]
-                new_recipe.image = form_instance.cleaned_data["image"]
-                new_recipe.author = request.user
-                new_recipe.save()
+                new_recipe = form_instance.save(request)
                 return redirect("/add_ingredient/" + str(new_recipe.id) + "/")
         else:
             form_instance = forms.RecipeForm()
