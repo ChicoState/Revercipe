@@ -8,12 +8,9 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-
 from . import models
 from . import forms
 # Create your views here.
-
-
 
 def index(request):
     ingredientObjects = []
@@ -21,13 +18,22 @@ def index(request):
     recipes = models.RecipeModel.objects.all()
     queryset =  Q()
     recipes = models.RecipeModel.objects.all()
-    recipe_list = {"recipes": []} 
+    recipe_list = {"recipes": []}
 
     if(not request.session.has_key("ingredients")):
         request.session["ingredients"] = []
+    
+    if(not request.session.has_key("maxcals")):
+        request.session["ingredients"] = None
+    
+    if(not request.session.has_key("categories")):
+        request.session["categories"] = []
+        
     if request.GET.get('Clear') == "Clear":
         request.session["ingredients"] = []
         request.session["maxcals"] = None
+        request.session["categories"] = []
+
     if request.method == "GET":
         nav_form = forms.top_search_form(request.GET)
         filter_form = forms.filter_sidebar_form(request.GET)
@@ -54,37 +60,63 @@ def index(request):
                 for ing in ingredientObjects:
                     for recipe in ing.recipes.all():
                         recipes.append(recipe)
+                        
         if filter_form.is_valid() and request.method== "GET" and 'ingredient_add' in request.GET:
             ingredient = filter_form.getIngredient()
             maxcals = filter_form.getMaxCals()
+            category = filter_form.getCategory()
+
             if(not request.session.has_key("ingredients")):
                 request.session["ingredients"] = []
+            
+            if(not request.session.has_key("categories")):
+                request.session["categories"] = []
+
             if len(ingredient) != 0:
                 request.session["ingredients"].append(ingredient)
+
+            if len(category) != 0:
+                request.session["categories"].append(category)
+
             request.session["maxcals"] = maxcals
             recipes = []
+
             for i in request.session["ingredients"]:
-                queryset =  Q(name__icontains=i)
+                queryset =  Q(name__icontains=i) 
             ingredientObjects = models.IngredientModel.objects.filter(queryset)
-            print(request.session["ingredients"])
+
+            for i in request.session["categories"]:
+                queryset =  Q(name__icontains=i) 
+            categoryObjects = models.CategoryModel.objects.filter(queryset)
+    
             if(request.session["maxcals"] != None):
                ingredientObjects = models.IngredientModel.objects.filter(calories__lte = maxcals)
+
             for i in ingredientObjects:
                 for recipe in i.recipes.all():
-                    recipes.append(recipe)  
+                    recipes.append(recipe) 
+
+            for recipe in recipes:
+                for category in categoryObjects:
+                    if recipe not in category.recipes.all():
+                        recipes.remove(recipe)
+
+            filter_form = forms.filter_sidebar_form()                  
     else:
         request.session["ingredients"] = []
+        request.session["categories"] = []
         filter_form = forms.filter_sidebar_form()
         nav_form = forms.top_search_form()
         res = ""
         type = ""
+
     for recipe in recipes:
         if request.user.is_authenticated:
             favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-    
+
         num_comments = models.Comment.objects.filter(recipe=recipe).count()
         total = getRatingTotal(recipe, num_comments)
-        
+
         if request.user.is_authenticated:
             recipe_list["recipes"] += [{
                 "name": recipe.name,
@@ -107,28 +139,38 @@ def index(request):
                 "rating": total
             }]
 
-    filtered_ingredients = [i for i in request.session["ingredients"]]
+
+    filtered_ingredients = []
+
+    for ingredient in request.session["ingredients"]:
+        if ingredient not in filtered_ingredients:
+            filtered_ingredients.append(ingredient)
+
+    filtered_categories = []
+
+    for category in request.session["categories"]:
+        if category not in filtered_categories:
+            filtered_categories.append(category)
+
     context = {
         "Title": "Recipes",
         "Recipes": recipe_list["recipes"],
-        #"form": form,
         "navForm": nav_form,
         "filter_form": filter_form,
         "authenticated": request.user.is_authenticated,
         "filtered_ingredients": filtered_ingredients,
+        "filtered_categories": filtered_categories
     }
 
     return render(request, "index.html", context=context)
 
-def settings(request):
-    return render(request, "settings.html")
 
 def profile_view(request, user_id):
     user = models.User.objects.get(pk=user_id)
     followers_count = models.Follower.objects.filter(following=user).count()
     following_count = models.Follower.objects.filter(follower=user).count()
     favorite_count =  getFavoriteCount(user)
-    
+
     if request.user.is_authenticated:
         try:
             follow = models.Follower.objects.filter(follower=request.user, following=user)
@@ -136,7 +178,7 @@ def profile_view(request, user_id):
             follow = None
     else:
         follow = 0
-        
+
 
     if request.method == "GET":
         recipes = models.RecipeModel.objects.filter(author=user)
@@ -145,22 +187,22 @@ def profile_view(request, user_id):
         for recipe in recipes:
             if request.user.is_authenticated:
                 favorite = models.Favorite.objects.get_or_create(recipe=recipe, user=request.user)
-            
+
 
             num_comments = models.Comment.objects.filter(recipe=recipe).count()
             total = getRatingTotal(recipe, num_comments)
 
             if request.user.is_authenticated:
-                recipe_list["recipes"] += [{
-                    "name": recipe.name,
-                    "id": recipe.id,
-                    "description": recipe.description,
-                    "image": recipe.image,
-                    "author": recipe.author,
-                    "favorite": favorite[0].favorite,
-                    "comments": num_comments,
-                    "rating": total
-                }]
+                  recipe_list["recipes"] += [{
+                        "name": recipe.name,
+                        "id": recipe.id,
+                        "description": recipe.description,
+                        "image": recipe.image,
+                        "author": recipe.author,
+                        "favorite": favorite[0].favorite,
+                        "comments": num_comments,
+                        "rating": total
+                    }]
             else:
                 recipe_list["recipes"] += [{
                     "name": recipe.name,
@@ -198,6 +240,7 @@ def update_profile(request):
 
     return render(request, 'update_profile.html', {'profile_form': profile_form})
 
+
 def follow(request, user_id):
     # Get who is going to be follow
     followee = models.User.objects.get(pk = user_id)
@@ -210,29 +253,17 @@ def follow(request, user_id):
     except models.Follower.DoesNotExist:
         follow = None
 
-    if follow != None: 
+    if follow != None:
         follow.delete()
     else:
         follow = models.Follower()
         follow.follower = request.user
         follow.following = followee
-        follow.save() 
+        follow.save()
 
     return redirect('/profile/'+ str(user_id) + '/')
 
-def favorite(request):
-    recipe = models.RecipeModel.objects.get(pk=request.GET.get('recipe_id'))
-    favorite = models.Favorite.objects.get(recipe=recipe, user=request.user)
 
-    if favorite.favorite:
-        favorite.favorite = 0
-    else:
-        favorite.favorite = 1
-
-    favorite.save()
-
-    return HttpResponse()
-            
 def register(request):
     if request.method == "POST":
         form_instance = forms.RegistrationForm(request.POST)
@@ -247,21 +278,18 @@ def register(request):
 
     return render(request, "registration/register.html", context=context)
 
+
 def logout_view(request):
     logout(request)
     return redirect("/")
+
 
 def create_recipe(request):
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.RecipeForm(request.POST, request.FILES)
             if form_instance.is_valid():
-                new_recipe = models.RecipeModel(name=form_instance.cleaned_data["name"])
-                new_recipe.name = form_instance.cleaned_data["name"]
-                new_recipe.description = form_instance.cleaned_data["description"]
-                new_recipe.image = form_instance.cleaned_data["image"]
-                new_recipe.author = request.user
-                new_recipe.save()
+                new_recipe = form_instance.save(request)
                 return redirect("/add_ingredient/" + str(new_recipe.id) + "/")
         else:
             form_instance = forms.RecipeForm()
@@ -274,17 +302,13 @@ def create_recipe(request):
 
     return render(request, "create_recipe.html", context=context)
 
+
 def edit_recipe(request, instance_id):
-    recipe = models.RecipeModel.objects.get(pk=instance_id)
-        
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.RecipeForm(request.POST, request.FILES)
             if form_instance.is_valid():
-                recipe.name = form_instance.cleaned_data["name"]
-                recipe.description = form_instance.cleaned_data["description"]
-                recipe.image = form_instance.cleaned_data["image"]
-                recipe.save()
+                form_instance.edit(instance_id)
                 return redirect("/add_ingredient/" + str(instance_id) + "/")
         else:
             form_instance = forms.RecipeForm()
@@ -303,35 +327,29 @@ def delete_recipe(request, instance_id):
     recipe.delete()
     return redirect("/")
 
-
 def get_recipe(request, instance_id):
     request_user = request.user
     current_recipe = ""
     recipe_ingredients = []
     comment_list = []
-    
+
     if request.method == "GET":
         if request.user.is_authenticated:
             current_recipe = models.RecipeModel.objects.get(pk=instance_id)
-          
+            current_recipe_steps = transform_recipe_steps(current_recipe)
+
     recipe_ingredients = models.IngredientModel.objects.filter(recipes__name=current_recipe)
     comments = models.Comment.objects.all()
 
     for comment in comments:
         if comment.recipe == current_recipe:
             comment_list.append(comment)
-    
 
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.CommentForm(request.POST)
             if form_instance.is_valid():
-                new_comment = models.Comment()
-                new_comment.comment_text = form_instance.cleaned_data["comment_text"]
-                new_comment.rating = form_instance.cleaned_data["rating"]
-                new_comment.recipe = models.RecipeModel.objects.get(pk=instance_id)
-                new_comment.author = models.User.objects.get(pk=request.user.id)
-                new_comment.save(instance_id)
+                form_instance.save(request, instance_id)
                 form_instance = forms.CommentForm()
                 return redirect("/recipe/" + str(instance_id) + "/")
         else:
@@ -341,6 +359,7 @@ def get_recipe(request, instance_id):
 
     context = {
         "recipe" : current_recipe,
+        "steps" : current_recipe_steps,
         "request_user": request_user,
         "ingredients" : recipe_ingredients,
         "comment_form": form_instance,
@@ -349,11 +368,7 @@ def get_recipe(request, instance_id):
 
     return render(request, "recipe.html", context=context)
 
-def comment(request, instance_id):
-    
-    if request.method == 'POST':
-        comment = models.Comment()
-        comment
+
 
 @csrf_exempt
 def add_ingredients(request, instance_id):
@@ -363,18 +378,11 @@ def add_ingredients(request, instance_id):
     if request.method == "POST":
         if request.user.is_authenticated:
             form_instance = forms.IngredientForm(request.POST)
-
+                
             if form_instance.is_valid():
-                new_ingredient = models.IngredientModel(name=form_instance.cleaned_data["name"])
-                new_ingredient.name = form_instance.cleaned_data["name"]
-                new_ingredient.calories = form_instance.cleaned_data["calories"]
-                new_ingredient.amount_type = form_instance.cleaned_data["amount_type"]
-                new_ingredient.amount = form_instance.cleaned_data["amount"]
-                new_ingredient.save()
-                new_ingredient.recipes.add(recipe)
-                new_ingredient.save()
+                form_instance.save(request, recipe)
                 form_instance = forms.IngredientForm()
-
+        
                 context = {
                     "id": instance_id,
                     "recipe": recipe,
@@ -386,7 +394,6 @@ def add_ingredients(request, instance_id):
                 return render(request, "add_ingredient.html", context=context)
 
             if not form_instance.is_valid():
-
                 context = {
                     "id": instance_id,
                     "recipe": recipe,
@@ -417,15 +424,7 @@ def add_ingredients(request, instance_id):
         "ingredients": recipe_ingredients
     }
 
-
-#     return render(request, "add_ingredient.html", context=context)
-
     return render(request, "add_ingredient.html", context=context)
-
-def add_nutrition(request, instance_id):
-    context = {}
-    return render(request, "add_nutrition.html", context=context)
-
 
 def following_view(request):
     user = models.User.objects.get(pk=request.user.id)
@@ -440,7 +439,7 @@ def following_view(request):
 
         for follow in following:
             recipes = models.RecipeModel.objects.filter(author=follow.following)
-           
+
             for recipe in recipes:
                 num_comments = models.Comment.objects.filter(recipe=recipe).count()
                 total = getRatingTotal(recipe, num_comments)
@@ -511,9 +510,10 @@ def favorite_view(request):
     return render(request, "following_recipes.html", context=context)
 
 
+
 def getRatingTotal(recipe, num_comments):
     ratings = models.Comment.objects.filter(recipe=recipe)
-    
+
     total = 0
 
     for rating in ratings:
@@ -523,6 +523,7 @@ def getRatingTotal(recipe, num_comments):
         total = total/num_comments
 
     return total
+
 
 
 def getFavoriteCount(user):
@@ -538,4 +539,31 @@ def getFavoriteCount(user):
 
     return total
 
+
+def favorite(request):
+    recipe = models.RecipeModel.objects.get(pk=request.GET.get('recipe_id'))
+    favorite = models.Favorite.objects.get(recipe=recipe, user=request.user)
+
+    if favorite.favorite:
+        favorite.favorite = 0
+    else:
+        favorite.favorite = 1
+
+    favorite.save()
+
+    return HttpResponse()
+
+
+
+def transform_recipe_steps(current_recipe):
+    current_recipe_steps = current_recipe.description.splitlines()
+    i = 1
+    index = 0
+   
+    for step in current_recipe_steps:
+        current_recipe_steps[index] = "Step " + str(i) + ": " + step
+        i += 1
+        index += 1
     
+    return current_recipe_steps
+

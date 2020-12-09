@@ -9,9 +9,9 @@
 
     <title>Revercipe</title>
     <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
-    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" type="text/css" href="{%static "css/app.css" %}">
     <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
-    
+
     {% block css %}
     {% endblock %}
 
@@ -38,7 +38,7 @@
         {% endif %}
       <!--ENDING TESTING -->
 
-      
+
       {% if request.path != '/login/' and request.path != '/register/' %}
       <div class="top-bar-right">
           {% if user.is_authenticated %}
@@ -64,12 +64,13 @@
   </div>
 
   <body onload="on_load()">
-  
+
 
   {% block body %}
   {% block content %}
   {% endblock content %}
   {% endblock body %}
+
   </body>
 
   <script type="text/javascript" src="{% static '/js/app.js' %}"></script>
@@ -78,5 +79,5 @@
   <script src="{%static "js/vendor/what-input.js" %}"></script>
   <script src="{%static "js/vendor/foundation.js" %}"></script>
   <script>$(document).foundation();</script>
-  
+
 </html>

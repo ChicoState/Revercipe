@@ -13,12 +13,6 @@
                                 <h4 style="color: white;">{{recipe.name}}</h4>
                             </div>
                     
-
-                            <div style="float: right; width: 5%; margin-top: 2%;">
-                                {% if recipe.author == request.user %}
-                                    <a href="/edit_recipe/{{recipe.id}}/"><img alt="" src='/static/images/edit-icon.svg' style='height:20px; width:20px;'></a>
-                                {% endif %}
-                            </div>
                          </div>
                          <a href="/recipe/{{recipe.id}}/">
                             <div class="card-section" style="align-content: center; ">
@@ -32,10 +26,13 @@
 
                                     <div style="float: right;">
                                         {% if authenticated %}
+                                            {% if recipe.author == request.user %}
+                                                <a href="/edit_recipe/{{recipe.id}}/"><img alt="" src='/static/images/edit-icon.svg' style='height:17px; width:17px;'></a>
+                                            {% endif %}
                                             {% if recipe.favorite %}
-                                                <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> </a>
+                                                · <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/red-heart.jpg' style='height:20px; width:20px;'> </a>
                                             {% elif not recipe.favorite %}
-                                                <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
+                                                · <a><img onclick="toggle_profile_favorite({{user.id}}, {{recipe.id}})" alt=""  src='/static/images/fi-heart.svg' style='height:20px; width:20px;'> </a>
                                             {% endif %}
                                         · {% endif %}
                                         <img alt="" src='/static/images/gold-star.png' style='height:17px; width:17px;'> {{recipe.rating}}</>   
