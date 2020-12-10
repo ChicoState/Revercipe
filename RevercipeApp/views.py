@@ -80,6 +80,8 @@ def index(request):
 
             request.session["maxcals"] = maxcals
             recipes = []
+            ing_recipes = []
+            cat_recipes = []
 
             for i in request.session["ingredients"]:
                 queryset =  Q(name__icontains=i) 
@@ -94,12 +96,22 @@ def index(request):
 
             for i in ingredientObjects:
                 for recipe in i.recipes.all():
-                    recipes.append(recipe) 
+                    ing_recipes.append(recipe) 
 
-            for recipe in recipes:
-                for category in categoryObjects:
-                    if recipe not in category.recipes.all():
-                        recipes.remove(recipe)
+            for i in categoryObjects:
+                for recipe in i.recipes.all():
+                    cat_recipes.append(recipe) 
+
+            if ing_recipes and cat_recipes:
+                for recipe in ing_recipes:
+                    if recipe in cat_recipes:
+                        recipes.append(recipe)
+            elif ing_recipes:
+                for recipe in ing_recipes:
+                    recipes.append(recipe)
+            else:
+                for recipe in cat_recipes:
+                    recipes.append(recipe)
 
             filter_form = forms.filter_sidebar_form()                  
     else:
@@ -507,24 +519,26 @@ def favorite_view(request):
         "favorite_count": favorite_count
     }
 
-    return render(request, "following_recipes.html", context=context)
+    return render(request, "favorite_recipes.html", context=context)
 
 
+# Done testing
 
 def getRatingTotal(recipe, num_comments):
     ratings = models.Comment.objects.filter(recipe=recipe)
 
     total = 0
 
-    for rating in ratings:
-        total += rating.rating
+    if num_comments != 0:
+        for rating in ratings:
+            total += rating.rating
 
     if num_comments != 0:
         total = total/num_comments
 
     return total
 
-
+# Done testing
 
 def getFavoriteCount(user):
     recipes = models.RecipeModel.objects.filter(author=user)
@@ -539,6 +553,7 @@ def getFavoriteCount(user):
 
     return total
 
+# Done testing
 
 def favorite(request):
     recipe = models.RecipeModel.objects.get(pk=request.GET.get('recipe_id'))
@@ -554,6 +569,7 @@ def favorite(request):
     return HttpResponse()
 
 
+# Done testing
 
 def transform_recipe_steps(current_recipe):
     current_recipe_steps = current_recipe.description.splitlines()
