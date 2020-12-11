@@ -1,7 +1,8 @@
 from django.test import TestCase, RequestFactory, Client
 from RevercipeApp.models import RecipeModel, Comment, Favorite, Follower, IngredientModel
 from django.contrib.auth.models import User
-from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps, favorite_view, following_view, add_ingredients
+from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps
+from RevercipeApp.views import favorite_view, following_view, add_ingredients, delete_recipe, create_recipe, edit_recipe
 from django.urls import reverse
 
 
@@ -518,3 +519,162 @@ class testAddIngredientFail(TestCase):
         response = self.client.post(path='/add_ingredient/' + str(recipe.id) + '/', data=ingredient_form)
         
         self.assertEqual(response.context["fail"], True)
+
+# **********************
+# Test Get Recipe
+# **********************
+
+class testGetRecipe(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+       
+    def testGetRecipe(self):
+        recipe = RecipeModel.objects.get(name="Pasta")
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/recipe/' + str(recipe.id) + '/')
+        self.assertTrue(response.context["recipe"], recipe)
+
+class testGetRecipeComments(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testGetRecipeComments(self):
+        recipe = RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+        comment_1 = Comment.objects.create(author=self.user, recipe=recipe, comment_text="Loved it!", rating=5) 
+        comment_2 = Comment.objects.create(author=self.user, recipe=recipe, comment_text="Hated it!", rating=1) 
+    
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/recipe/' + str(recipe.id) + '/')
+        
+        expected_comments = [comment_1, comment_2]
+        i = 0
+
+        for comment in response.context["comments"]:
+            self.assertEqual(comment, expected_comments[i])
+            i+=1
+
+class testGetRecipeIngredients(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testGetRecipeComments(self):
+        recipe = RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+        ing_1 = IngredientModel.objects.create(name="Noodles", amount=50, amount_type="Grams")
+        ing_2 = IngredientModel.objects.create(name="Sauce", amount=50, amount_type="Grams")
+        ing_1.recipes.add(recipe)
+        ing_2.recipes.add(recipe) 
+    
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/recipe/' + str(recipe.id) + '/')
+        
+        expected_ingredients = [ing_1, ing_2]
+        i = 0
+
+        for ing in response.context["ingredients"]:
+            self.assertEqual(ing, expected_ingredients[i])
+            i+=1
+
+
+class testPostRecipeComments(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testRecipePostComment(self):
+        recipe = RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+         
+        comment_form = {
+            "comment_text": "Loved it!",
+            "rating": 5
+        }
+
+        self.client.login(username="testuser", password="12345")
+        self.client.post(path='/recipe/' + str(recipe.id) + '/', data=comment_form)
+        response = self.client.get(path='/recipe/' + str(recipe.id) + '/')
+
+        comment_1 = Comment.objects.get(author=self.user, recipe=recipe, comment_text="Loved it!")
+        expected_comments = [comment_1]
+
+        for comment in response.context["comments"]:
+            self.assertEqual(comment, expected_comments[0])
+
+
+# **********************
+# Test Delete Recipe
+# **********************
+
+class testDeleteRecipe(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testRecipeDeleteRecipe(self):
+        recipe = RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+        
+        self.client.login(username="testuser", password="12345")
+        self.client.post(path='/delete_recipe/' + str(recipe.id) + '/')
+
+        recipe_count = RecipeModel.objects.filter(id=recipe.id).count()
+        self.assertEqual(recipe_count, 0)
+
+
+# **********************
+# Test Create Recipe
+# **********************
+
+class testCreateRecipe(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testRecipeCreate(self):
+
+        recipe_form = {
+            "name": "Pasta",
+            "description": "I love pasta!",
+            "image": "test.jpg",
+            "categories": "dinner" 
+        }
+        
+        self.client.login(username="testuser", password="12345")
+        self.client.post(path='/create_recipe/', data=recipe_form)
+
+        recipe_count = RecipeModel.objects.filter(name="Pasta").count()
+        self.assertEqual(recipe_count, 1)
+
+
+# **********************
+# Test Edit Recipe
+# **********************
+
+class testEditRecipe(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testEdit_recipe(self):
+        recipe = RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+
+        edit_recipe_form = {
+            "name": "Pie",
+            "description": "I love pie!",
+            "image": "pie.jpg",
+            "categories": "dessert" 
+        }
+        
+        self.client.login(username="testuser", password="12345")
+        self.client.post(path='/edit_recipe/' + str(recipe.id) + '/', data=edit_recipe_form)
+
+        edited_recipe = RecipeModel.objects.get(id=recipe.id)
+        self.assertEqual(edited_recipe.name, "Pie")

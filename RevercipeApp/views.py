@@ -295,6 +295,7 @@ def logout_view(request):
     logout(request)
     return redirect("/")
 
+# Done testing
 
 def create_recipe(request):
     if request.method == "POST":
@@ -314,6 +315,7 @@ def create_recipe(request):
 
     return render(request, "create_recipe.html", context=context)
 
+# Done testing
 
 def edit_recipe(request, instance_id):
     if request.method == "POST":
@@ -334,10 +336,15 @@ def edit_recipe(request, instance_id):
 
     return render(request, "edit-recipe.html", context=context)
 
+
+# Done testing
+
 def delete_recipe(request, instance_id):
     recipe = models.RecipeModel.objects.get(pk=instance_id)
     recipe.delete()
     return redirect("/")
+
+# Done testing
 
 def get_recipe(request, instance_id):
     request_user = request.user
