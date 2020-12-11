@@ -1,7 +1,7 @@
 from django.test import TestCase, RequestFactory, Client
 from RevercipeApp.models import RecipeModel, Comment, Favorite, Follower, IngredientModel
 from django.contrib.auth.models import User
-from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps
+from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps, follow, profile_view
 from RevercipeApp.views import favorite_view, following_view, add_ingredients, delete_recipe, create_recipe, edit_recipe
 from django.urls import reverse
 
@@ -678,3 +678,86 @@ class testEditRecipe(TestCase):
 
         edited_recipe = RecipeModel.objects.get(id=recipe.id)
         self.assertEqual(edited_recipe.name, "Pie")
+
+
+# **********************
+# Test Follow
+# **********************
+
+
+class testFollow(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testFollow(self):
+        testuser_2 = User.objects.create_user(username='testuser_2', password='12345')
+        testuser_follow_count = Follower.objects.filter(following=testuser_2).count()
+        self.assertEqual(testuser_follow_count, 0)
+        self.client.login(username="testuser", password="12345")
+        self.client.get(path='/follow/' + str(testuser_2.id) + '/')
+        testuser_follow_count = Follower.objects.filter(following=testuser_2).count()
+        self.assertEqual(testuser_follow_count, 1)
+
+class testUnFollow(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testUnFollow(self):
+        testuser_2 = User.objects.create_user(username='testuser_2', password='12345')
+        testuser_follow_count = Follower.objects.filter(following=testuser_2).count()
+        self.assertEqual(testuser_follow_count, 0)
+        self.client.login(username="testuser", password="12345")
+        self.client.get(path='/follow/' + str(testuser_2.id) + '/')
+        testuser_follow_count = Follower.objects.filter(following=testuser_2).count()
+        self.assertEqual(testuser_follow_count, 1)
+        self.client.login(username="testuser", password="12345")
+        self.client.get(path='/follow/' + str(testuser_2.id) + '/')
+        testuser_follow_count = Follower.objects.filter(following=testuser_2).count()
+        self.assertEqual(testuser_follow_count, 0)
+
+# **********************
+# Test Profile View
+# **********************
+
+class testProfileView(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        testuser_2 = User.objects.create_user(username='testuser_2', password='12345')
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+        RecipeModel.objects.create(author=testuser_2, name="Pizza", description="I love pizza")
+        RecipeModel.objects.create(author=self.user, name="Pie", description="I love pie")
+        
+    def testProfileView(self):
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/profile/' + str(self.user.id) + '/')
+        recipes = response.context["recipes"]
+        expected_recipes = ["Pasta", "Pie"]
+        i = 0
+        for recipe in recipes:
+            self.assertEqual(recipe["name"], expected_recipes[i])
+            i+=1
+
+
+class testProfileViewFollowCount(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        testuser_2 = User.objects.create_user(username='testuser_2', password='12345')
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        Follower.objects.create(follower=self.user, following=testuser_2)
+        Follower.objects.create(follower=testuser_2, following=self.user)
+
+    def testProfileViewFollowCount(self):
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/profile/' + str(self.user.id) + '/')
+        following_count = response.context["following"]
+        follower_count = response.context["followers"]
+        self.assertEqual(following_count, 1)
+        self.assertEqual(follower_count, 1)
+
