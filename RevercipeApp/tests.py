@@ -1,7 +1,13 @@
 from django.test import TestCase, RequestFactory, Client
-from RevercipeApp.models import RecipeModel, Comment, Favorite
+from RevercipeApp.models import RecipeModel, Comment, Favorite, Follower, IngredientModel
 from django.contrib.auth.models import User
-from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps
+from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps, favorite_view, following_view, add_ingredients
+from django.urls import reverse
+
+
+# *********************************
+# Model Creation
+# *********************************
 
 # Create a basic recipe
 
@@ -14,7 +20,25 @@ class RecipeCreate(TestCase):
         pastaRecipe = RecipeModel.objects.get(name="Pasta")
         self.assertEqual(pastaRecipe.description, "I love pasta")
 
-# testGetRatingTotal
+
+# test to make sure Favorite creation object works
+
+class FavoriteCreate(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta")
+        pastaRecipe = RecipeModel.objects.get(name="Pasta")
+        Favorite.objects.create(recipe=pastaRecipe, user=self.user)
+        
+    def testFavCreate(self):
+        pastaRecipe = RecipeModel.objects.get(name="Pasta")
+        fav = Favorite.objects.get(recipe=pastaRecipe, user=self.user)
+        self.assertEqual(fav.favorite, 0)
+
+
+# *********************************
+# Test GetRatingTotal
+# *********************************
 
 class testGetRatingTotal_1(TestCase):
     def setUp(self):
@@ -28,8 +52,6 @@ class testGetRatingTotal_1(TestCase):
         pastaRecipe = RecipeModel.objects.get(name="Pasta")
         total = getRatingTotal(pastaRecipe, 2)
         self.assertEqual(total, 4)
-
-# testGetRatingTotal_2
 
 # If num_comments = 0, function should return 0
 
@@ -45,20 +67,6 @@ class testGetRatingTotal_2(TestCase):
         pastaRecipe = RecipeModel.objects.get(name="Pasta")
         total = getRatingTotal(pastaRecipe, 0)
         self.assertEqual(total, 0)
-
-# test to make sure Favorite creation object works
-
-class testFavoriteCreate(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='12345')
-        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta")
-        pastaRecipe = RecipeModel.objects.get(name="Pasta")
-        Favorite.objects.create(recipe=pastaRecipe, user=self.user)
-        
-    def testFavCreate(self):
-        pastaRecipe = RecipeModel.objects.get(name="Pasta")
-        fav = Favorite.objects.get(recipe=pastaRecipe, user=self.user)
-        self.assertEqual(fav.favorite, 0)
 
 
 # *********************************
@@ -129,6 +137,7 @@ class testToggleFavorite_2(TestCase):
 # Test GetFavoriteCount
 # *********************************
 
+
 class testGetFavoriteCount(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -184,6 +193,7 @@ class testGetFavoriteCount(TestCase):
 # Test TransformRecipeSteps
 # *********************************
 
+
 class testTransformRecipeSteps(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -201,6 +211,310 @@ class testTransformRecipeSteps(TestCase):
         for instruction in recipe_instructions:
             self.assertEqual(instruction, 'Step ' + str(i) + ': Instruction ' + str(i))
             i+=1
+
+# **************************************************
+# Test Favorite View used to generate Favorite tab
+# **************************************************
+   
+class testGetFavoriteView_1(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta")
+        RecipeModel.objects.create(author=self.user, name="Pizza", description="I love pizza")
+        RecipeModel.objects.create(author=self.user, name="Pie", description="I love pie")
+        
+        
+
+    def testGetFavoriteView(self):
+        # Favorite pasta recipe
+        pastaRecipe = RecipeModel.objects.get(name="Pasta", author=self.user)
+        Favorite.objects.create(recipe=pastaRecipe, user=self.user)
        
+        data = {
+            "recipe_id": pastaRecipe.id
+        }
+
+        request = self.factory.get(path="/ajax/toggle_favorite/", data=data)
+        request.user = self.user
+        response = favorite(request)
+
+        # Favorite pizza recipe
+        pizzaRecipe = RecipeModel.objects.get(name="Pizza", author=self.user)
+        Favorite.objects.create(recipe=pizzaRecipe, user=self.user)
+       
+        data = {
+            "recipe_id": pizzaRecipe.id
+        }
+
+        request = self.factory.get(path="/ajax/toggle_favorite/", data=data)
+        request.user = self.user
+        response = favorite(request)
+        self.assertEqual(response.status_code, 200)
+
+        # Favorite pie recipe
+        pieRecipe = RecipeModel.objects.get(name="Pie", author=self.user)
+        Favorite.objects.create(recipe=pieRecipe, user=self.user)
+       
+        data = {
+            "recipe_id": pieRecipe.id
+        }
+
+        request = self.factory.get(path="/ajax/toggle_favorite/", data=data)
+        request.user = self.user
+        response = favorite(request)
+     
+        # At this point, three recipes have been favorited for user testuser
+
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/favorite/')
+    
+        recipes = response.context["recipes"]
+        expected_recipes = ["Pasta", "Pizza", "Pie"]
+        i = 0
+
+        for recipe in recipes:
+            self.assertEqual(recipe["name"], expected_recipes[i])
+            i+=1
+        
+
+# Only favorite two out of three created recipes
+
+class testGetFavoriteView_2(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta")
+        RecipeModel.objects.create(author=self.user, name="Pizza", description="I love pizza")
+        RecipeModel.objects.create(author=self.user, name="Pie", description="I love pie")
         
     
+    def testGetFavoriteView(self):
+      
+
+        # Favorite pasta recipe
+        pastaRecipe = RecipeModel.objects.get(name="Pasta", author=self.user)
+        Favorite.objects.create(recipe=pastaRecipe, user=self.user)
+       
+        data = {
+            "recipe_id": pastaRecipe.id
+        }
+
+        request = self.factory.get(path="/ajax/toggle_favorite/", data=data)
+        request.user = self.user
+        response = favorite(request)
+
+        # Favorite pie recipe
+        pieRecipe = RecipeModel.objects.get(name="Pie", author=self.user)
+        Favorite.objects.create(recipe=pieRecipe, user=self.user)
+       
+        data = {
+            "recipe_id": pieRecipe.id
+        }
+
+        request = self.factory.get(path="/ajax/toggle_favorite/", data=data)
+        request.user = self.user
+        response = favorite(request)
+     
+        # At this point, three recipes have been favorited for user testuser
+
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/favorite/')
+    
+        recipes = response.context["recipes"]
+        expected_recipes = ["Pasta", "Pie"]
+        i = 0
+
+        for recipe in recipes:
+            self.assertEqual(recipe["name"], expected_recipes[i])
+            i+=1
+        
+# Test to make sure follower/following count is calculated correctly
+
+class testGetFavoriteViewFollowCounts(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        another_test_user = User.objects.create_user(username='testuser_2', password='12345')
+        Follower.objects.create(follower=another_test_user, following=self.user)
+        Follower.objects.create(follower=self.user, following=another_test_user)
+        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta")        
+    
+    def testGetFavoriteView(self):
+      
+
+        # Favorite pasta recipe
+        pastaRecipe = RecipeModel.objects.get(name="Pasta", author=self.user)
+        Favorite.objects.create(recipe=pastaRecipe, user=self.user)
+       
+        data = {
+            "recipe_id": pastaRecipe.id
+        }
+
+        request = self.factory.get(path="/ajax/toggle_favorite/", data=data)
+        request.user = self.user
+        response = favorite(request)
+
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/favorite/')
+    
+        follow_count = response.context["followers"]
+        following_count = response.context["following"]
+        recipes = response.context["recipes"]
+        expected_recipes = ["Pasta"]
+        i = 0
+
+        for recipe in recipes:
+            self.assertEqual(recipe["name"], expected_recipes[i])
+            i+=1
+
+        self.assertEqual(follow_count, 1)
+        self.assertEqual(following_count, 1)
+
+
+# **************************************************
+# Test Following View used to generate Favorite tab
+# **************************************************     
+
+# Should have recipes for just Pizza and Pie since these
+# were created by another_test_user and self.user is 
+# following them
+
+class testGetFollowingView_1(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        another_test_user = User.objects.create_user(username='testuser_2', password='12345')
+        Follower.objects.create(follower=self.user, following=another_test_user)
+        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta")     
+        RecipeModel.objects.create(author=another_test_user, name="Pizza", description="I love pizza")
+        RecipeModel.objects.create(author=another_test_user, name="Pie", description="I love pie")   
+    
+    def testGetFollowerView(self):
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/following/')
+
+        recipes = response.context["recipes"]
+        expected_recipes = ["Pizza", "Pie"]
+        i = 0
+
+        for recipe in recipes:
+            self.assertEqual(recipe["name"], expected_recipes[i])
+            i+=1
+
+class testGetFollowingView_FavCount(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+       
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        another_test_user = User.objects.create_user(username='testuser_2', password='12345')
+        Follower.objects.create(follower=self.user, following=another_test_user)
+        
+        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta") 
+        RecipeModel.objects.create(author=self.user, name="Pancakes", description="I love pancakes")
+    
+    def testGetFollowerView(self):
+
+         # Favorite pasta recipe
+        pastaRecipe = RecipeModel.objects.get(name="Pasta", author=self.user)
+        Favorite.objects.create(recipe=pastaRecipe, user=self.user)
+       
+        data = {
+            "recipe_id": pastaRecipe.id
+        }
+
+        request = self.factory.get(path="/ajax/toggle_favorite/", data=data)
+        request.user = self.user
+        response = favorite(request)
+
+        # Favorite pancakes recipe
+        pancakesRecipe = RecipeModel.objects.get(name="Pancakes", author=self.user)
+        Favorite.objects.create(recipe=pancakesRecipe, user=self.user)
+       
+        data = {
+            "recipe_id": pancakesRecipe.id
+        }
+
+        request = self.factory.get(path="/ajax/toggle_favorite/", data=data)
+        request.user = self.user
+        response = favorite(request)
+
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/following/')
+
+        self.assertEqual(response.context["favorite_count"], 2)
+    
+class testGetFollowingCounts(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+       
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        another_test_user = User.objects.create_user(username='testuser_2', password='12345')
+        Follower.objects.create(follower=self.user, following=another_test_user)
+        
+    def testGetFollowerView(self):
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(path='/following/')
+
+        self.assertEqual(response.context["followers"], 0)
+        self.assertEqual(response.context["following"], 1)
+    
+
+# **************************************************
+# Test Add Ingredient View
+# **************************************************  
+
+class testAddIngredientSuccess(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+       
+    def testAddIngredient(self):
+        recipe = RecipeModel.objects.get(name="Pasta")
+    
+        ingredient_form = {
+            "name": "Noodles",
+            "calories": 100,
+            "amount_type": "Grams",
+            "amount": 50
+        }
+        
+        self.client.login(username="testuser", password="12345")
+        response = self.client.post(path='/add_ingredient/' + str(recipe.id) + '/', data=ingredient_form)
+        
+        self.assertEqual(response.context["success"], True)
+
+        ingredient = IngredientModel.objects.get(recipes=recipe)
+
+        for ing in response.context["ingredients"]:
+            self.assertEqual(ing, ingredient)
+
+
+class testAddIngredientFail(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        RecipeModel.objects.create(author=self.user, name="Pasta", image="test.jpg", description="I love pasta") 
+       
+    def testAddIngredient(self):
+        recipe = RecipeModel.objects.get(name="Pasta")
+    
+        ingredient_form = {
+            "name": "Noodles",
+            "calories": 100,
+            "amount_type": "Grams"
+        }
+        
+        self.client.login(username="testuser", password="12345")
+        response = self.client.post(path='/add_ingredient/' + str(recipe.id) + '/', data=ingredient_form)
+        
+        self.assertEqual(response.context["fail"], True)
