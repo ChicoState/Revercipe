@@ -380,7 +380,7 @@ def get_recipe(request, instance_id):
 
     return render(request, "recipe.html", context=context)
 
-
+# Done Testing 
 
 @csrf_exempt
 def add_ingredients(request, instance_id):
@@ -438,6 +438,8 @@ def add_ingredients(request, instance_id):
 
     return render(request, "add_ingredient.html", context=context)
 
+# Done Testing
+
 def following_view(request):
     user = models.User.objects.get(pk=request.user.id)
     followers_count = models.Follower.objects.filter(following=user).count()
@@ -478,6 +480,7 @@ def following_view(request):
 
     return render(request, "following_recipes.html", context=context)
 
+# Done Testing
 
 def favorite_view(request):
     user = models.User.objects.get(pk=request.user.id)
