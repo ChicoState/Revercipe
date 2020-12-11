@@ -176,6 +176,7 @@ def index(request):
 
     return render(request, "index.html", context=context)
 
+# Done testing
 
 def profile_view(request, user_id):
     user = models.User.objects.get(pk=user_id)
@@ -252,6 +253,7 @@ def update_profile(request):
 
     return render(request, 'update_profile.html', {'profile_form': profile_form})
 
+# Done testing
 
 def follow(request, user_id):
     # Get who is going to be follow
@@ -274,7 +276,6 @@ def follow(request, user_id):
         follow.save()
 
     return redirect('/profile/'+ str(user_id) + '/')
-
 
 def register(request):
     if request.method == "POST":
