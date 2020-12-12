@@ -154,15 +154,17 @@ def index(request):
 
     filtered_ingredients = []
 
-    for ingredient in request.session["ingredients"]:
-        if ingredient not in filtered_ingredients:
-            filtered_ingredients.append(ingredient)
+    if request.session["ingredients"] is not None:
+        for ingredient in request.session["ingredients"]:
+            if ingredient not in filtered_ingredients:
+                filtered_ingredients.append(ingredient)
 
     filtered_categories = []
 
-    for category in request.session["categories"]:
-        if category not in filtered_categories:
-            filtered_categories.append(category)
+    if request.session["categories"] is not  None:
+        for category in request.session["categories"]:
+            if category not in filtered_categories:
+                filtered_categories.append(category)
 
     context = {
         "Title": "Recipes",
@@ -277,6 +279,8 @@ def follow(request, user_id):
 
     return redirect('/profile/'+ str(user_id) + '/')
 
+# Need to test
+
 def register(request):
     if request.method == "POST":
         form_instance = forms.RegistrationForm(request.POST)
@@ -291,6 +295,7 @@ def register(request):
 
     return render(request, "registration/register.html", context=context)
 
+# Need to test
 
 def logout_view(request):
     logout(request)
@@ -413,7 +418,7 @@ def add_ingredients(request, instance_id):
 
                 return render(request, "add_ingredient.html", context=context)
 
-            if not form_instance.is_valid():
+            else:
                 context = {
                     "id": instance_id,
                     "recipe": recipe,
@@ -543,8 +548,6 @@ def getRatingTotal(recipe, num_comments):
     if num_comments != 0:
         for rating in ratings:
             total += rating.rating
-
-    if num_comments != 0:
         total = total/num_comments
 
     return total
