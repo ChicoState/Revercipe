@@ -1,9 +1,12 @@
 from django.test import TestCase, RequestFactory, Client
-from RevercipeApp.models import RecipeModel, Comment, Favorite, Follower, IngredientModel
+from RevercipeApp.models import RecipeModel, Comment, Favorite, Follower, IngredientModel, UserProfileModel
 from django.contrib.auth.models import User
 from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps, follow, profile_view
-from RevercipeApp.views import favorite_view, following_view, add_ingredients, delete_recipe, create_recipe, edit_recipe
+from RevercipeApp.views import favorite_view, following_view, add_ingredients, delete_recipe, create_recipe, edit_recipe, register
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+
 
 
 # *********************************
@@ -761,3 +764,137 @@ class testProfileViewFollowCount(TestCase):
         self.assertEqual(following_count, 1)
         self.assertEqual(follower_count, 1)
 
+
+# **********************
+# Test Index
+# **********************
+
+class testGetIndexView(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+       
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        another_test_user = User.objects.create_user(username='testuser_2', password='12345')
+        
+        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta!") 
+        RecipeModel.objects.create(author=self.user, name="Pancakes", description="I love pancakes!")
+        RecipeModel.objects.create(author=another_test_user, name="Pie", description="I love pie!")
+        RecipeModel.objects.create(author=another_test_user, name="Poppyseed Muffins", description="I love muffins!")
+        self.client.login(username="testuser", password="12345")
+
+    def testIndexView(self):
+
+        expected_recipes = ["Pasta", "Pancakes", "Pie", "Poppyseed Muffins"]
+        s = self.client.session
+        s["ingredients"] = []
+        s["categories"] = []
+        s.save()
+        response = self.client.get(path='/')
+
+        i = 0
+
+        for recipe in response.context["Recipes"]:
+            self.assertEqual(recipe["name"], expected_recipes[i])
+            i += 1
+
+
+class testGetIndexViewNoSessionInfo(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+       
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        another_test_user = User.objects.create_user(username='testuser_2', password='12345')
+        
+        RecipeModel.objects.create(author=self.user, name="Pasta", description="I love pasta!") 
+        RecipeModel.objects.create(author=self.user, name="Pancakes", description="I love pancakes!")
+        RecipeModel.objects.create(author=another_test_user, name="Pie", description="I love pie!")
+        RecipeModel.objects.create(author=another_test_user, name="Poppyseed Muffins", description="I love muffins!")
+        self.client.login(username="testuser", password="12345")
+
+    def testGetIndexViewNoSessionInfo(self):
+
+        expected_recipes = ["Pasta", "Pancakes", "Pie", "Poppyseed Muffins"]
+        response = self.client.get(path='/')
+
+        i = 0
+
+        for recipe in response.context["Recipes"]:
+            self.assertEqual(recipe["name"], expected_recipes[i])
+            i += 1
+
+# *************************
+# Test Registration
+# *************************
+
+class testRegistrationSuccess(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+       
+    def testRegistrationSuccess(self):
+        registration_form = {
+            "username": "brent_de", 
+            "email": "brent_de@gmail.com",
+            "password1": "ilovepizza12345",
+            "password2": "ilovepizza12345"
+        }
+
+        response = self.client.post(path='/register/', data=registration_form, follow=True)
+        self.assertEqual(response.status_code, 200)
+        logged_in = self.client.login(username="brent_de", password="ilovepizza12345")
+        self.assertTrue(logged_in)
+
+
+class testRegistrationFailFormInvalid(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+       
+    def testRegistrationFailFormInvalid(self):
+        registration_form = {
+            "username": "brent_de", 
+            "email": "brent_de@gmail.com",
+            "password1": "ilovepizza12345"
+        }
+
+        response = self.client.post(path='/register/', data=registration_form, follow=True)
+        self.assertEqual(response.status_code, 200)
+        logged_in = self.client.login(username="brent_de", password="ilovepizza12345")
+        self.assertFalse(logged_in)
+
+
+class testRegistrationPasswordsDontMatch(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+       
+    def testRegistrationPasswordsDontMatch(self):
+        registration_form = {
+            "username": "brent_de", 
+            "email": "brent_de@gmail.com",
+            "password1": "ilovepizza12345",
+            "password2": "ilovepizza"
+        }
+
+        response = self.client.post(path='/register/', data=registration_form, follow=True)
+        self.assertEqual(response.status_code, 200)
+        logged_in = self.client.login(username="brent_de", password="ilovepizza12345")
+        self.assertFalse(logged_in)
+        
+
+# **********************
+# Test Logout
+# **********************
+
+class testLogout(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+    
+    def testLogout(self):
+        self.client.login(username="testuser", password="12345")
+        self.client.get(path='/logout/')
+        self.assertNotIn('_auth_user_id', self.client.session)
