@@ -7,8 +7,6 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
-
-
 # *********************************
 # Model Creation
 # *********************************
