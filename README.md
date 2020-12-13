@@ -1,6 +1,8 @@
 # Revercipe
 [![Build Status](https://travis-ci.org/ChicoState/Revercipe.svg?branch=master)](https://travis-ci.org/ChicoState/Revercipe)
 
+[![Coverage Status](https://coveralls.io/repos/github/ChicoState/Revercipe/badge.svg?branch=master)](https://coveralls.io/github/ChicoState/Revercipe?branch=master)
+
 ## Begin
 * Clone repo
 ```
