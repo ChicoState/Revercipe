@@ -1,7 +1,7 @@
 from django.test import TestCase, RequestFactory, Client
 from RevercipeApp.models import RecipeModel, Comment, Favorite, Follower, IngredientModel, UserProfileModel
 from django.contrib.auth.models import User
-from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps, follow, profile_view
+from RevercipeApp.views import index, getRatingTotal, getFavoriteCount, favorite, transform_recipe_steps, follow
 from RevercipeApp.views import favorite_view, following_view, add_ingredients, delete_recipe, create_recipe, edit_recipe, register
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
